@@ -5640,6 +5640,224 @@ class AV_OT_crear_enjambre(Operator):
         return {'FINISHED'}
 
 
+NOMBRE_CAMARA = "AV_Camera"
+NOMBRE_MUNDO = "AV_World"
+NOMBRE_COMP = "AV_Glow"
+
+
+def objetos_del_plugin(escena):
+    """Lo que ha creado el plugin y se ve, para poder encuadrarlo."""
+    col = bpy.data.collections.get(NOMBRE_COLECCION)
+    if col is None:
+        return []
+    return [o for o in col.objects
+            if o.type == 'MESH' and not o.hide_render and len(o.data.vertices)]
+
+
+def caja_de(escena, objetos):
+    """Las ocho esquinas de la caja que lo envuelve todo, y su centro."""
+    from mathutils import Vector
+    dg = bpy.context.evaluated_depsgraph_get()
+    minimo = Vector((1e18, 1e18, 1e18))
+    maximo = Vector((-1e18, -1e18, -1e18))
+    hay = False
+    for ob in objetos:
+        me = ob.evaluated_get(dg).data
+        if me is None or not len(me.vertices):
+            # El enjambre solo tiene puntos: su malla evaluada sale vacia porque
+            # el modificador la convierte en instancias. Se usa la original.
+            me = ob.data
+        if me is None or not len(me.vertices):
+            continue
+        m = ob.matrix_world
+        for v in me.vertices:
+            p = m @ v.co
+            for i in range(3):
+                minimo[i] = min(minimo[i], p[i])
+                maximo[i] = max(maximo[i], p[i])
+            hay = True
+    if not hay:
+        centro = Vector((0.0, 0.0, 0.0))
+        return centro, [centro + Vector((x, y, z))
+                        for x in (-3, 3) for y in (-3, 3) for z in (-3, 3)]
+    centro = (minimo + maximo) * 0.5
+    esquinas = [Vector((x, y, z))
+                for x in (minimo.x, maximo.x)
+                for y in (minimo.y, maximo.y)
+                for z in (minimo.z, maximo.z)]
+    return centro, esquinas
+
+
+def poner_mundo_negro(escena):
+    mundo = bpy.data.worlds.get(NOMBRE_MUNDO) or bpy.data.worlds.new(NOMBRE_MUNDO)
+    mundo.use_nodes = True
+    fondo = mundo.node_tree.nodes.get("Background")
+    if fondo is not None:
+        fondo.inputs[0].default_value = (0.0, 0.0, 0.0, 1.0)
+        fondo.inputs[1].default_value = 0.0
+    escena.world = mundo
+    return mundo
+
+
+def poner_camara(escena, centro, esquinas, margen=1.06):
+    """Una camara que encuadre todo, de frente y un poco elevada.
+
+    La distancia no sale de la esfera que envuelve la escena, que para algo
+    ancho y plano -como un banco de cuerdas o un paisaje- se queda cortisima y
+    deja la imagen medio vacia. Se proyecta cada esquina de la caja sobre los
+    ejes de la camara y se busca la distancia minima a la que TODAS caben.
+    """
+    from mathutils import Vector
+    ob = bpy.data.objects.get(NOMBRE_CAMARA)
+    if ob is None or ob.type != 'CAMERA':
+        ob = bpy.data.objects.new(NOMBRE_CAMARA, bpy.data.cameras.new(NOMBRE_CAMARA))
+        escena.collection.objects.link(ob)
+    elif ob.name not in escena.objects:
+        escena.collection.objects.link(ob)
+
+    cam = ob.data
+    cam.lens = 50.0
+    ancho = max(escena.render.resolution_x, 1)
+    alto = max(escena.render.resolution_y, 1)
+    # El sensor mide a lo ancho; el alto sale del formato de la imagen.
+    tan_x = cam.sensor_width * 0.5 / cam.lens
+    tan_y = tan_x * alto / ancho
+
+    direccion = Vector((0.0, -1.0, 0.35)).normalized()
+    giro = (-direccion).to_track_quat('-Z', 'Y')
+    derecha = giro @ Vector((1.0, 0.0, 0.0))
+    arriba = giro @ Vector((0.0, 1.0, 0.0))
+    delante = giro @ Vector((0.0, 0.0, -1.0))
+
+    distancia = 1.0
+    for p in esquinas:
+        v = p - centro
+        fondo = v.dot(delante)          # + = mas lejos que el centro
+        distancia = max(distancia,
+                        abs(v.dot(derecha)) / tan_x - fondo,
+                        abs(v.dot(arriba)) / tan_y - fondo)
+    distancia *= margen
+
+    ob.location = centro + direccion * distancia
+    ob.rotation_euler = giro.to_euler()
+    cam.clip_end = max(cam.clip_end, distancia * 4.0)
+    escena.camera = ob
+    return ob
+
+
+def poner_resplandor(escena, fuerza=0.6, umbral=1.0):
+    """El halo de las emisiones. En Blender 5 ya no es del motor sino del
+    compositor, y sus ajustes van por entradas del nodo, no por propiedades."""
+    ng = bpy.data.node_groups.get(NOMBRE_COMP)
+    if ng is None:
+        ng = bpy.data.node_groups.new(NOMBRE_COMP, "CompositorNodeTree")
+        ng.interface.new_socket(name="Image", in_out='OUTPUT',
+                                socket_type='NodeSocketColor')
+        # El render entra por un nodo de CAPAS DE RENDER dentro del grupo, no
+        # por una entrada del grupo. Con una entrada, el grupo recibe negro y la
+        # imagen desaparece: comprobado, el brillo maximo caia de 0.93 a 0.004.
+        capas = ng.nodes.new("CompositorNodeRLayers"); capas.location = (-300, 0)
+        glare = ng.nodes.new("CompositorNodeGlare"); glare.location = (-40, 0)
+        salida = ng.nodes.new("NodeGroupOutput"); salida.location = (220, 0)
+        ng.links.new(capas.outputs["Image"], glare.inputs["Image"])
+        ng.links.new(glare.outputs["Image"], salida.inputs[0])
+
+    for nodo in ng.nodes:
+        if nodo.bl_idname == "CompositorNodeGlare":
+            # Los ajustes del Glare son ENTRADAS del nodo desde Blender 5, y los
+            # menus se escriben con su nombre visible ("Bloom", no 'BLOOM').
+            for nombre, valor in (("Type", "Bloom"), ("Quality", "High"),
+                                  ("Threshold", umbral), ("Strength", fuerza),
+                                  ("Size", 0.7)):
+                s = nodo.inputs.get(nombre)
+                if s is None:
+                    continue
+                try:
+                    s.default_value = valor
+                except Exception:
+                    pass    # segun la version, algun ajuste puede no existir
+    escena.compositing_node_group = ng
+    escena.render.use_compositing = True
+    return ng
+
+
+class AV_OT_montar_escena(Operator):
+    bl_idname = "audioviz.montar_escena"
+    bl_label = "Set up the scene"
+    bl_description = ("Leaves the scene ready for these presets to look like they "
+                      "should: black world, a camera framing what is there, and "
+                      "glow on the emissive materials. Everything it touches can be "
+                      "turned off below")
+    bl_options = {'REGISTER', 'UNDO'}
+
+    mundo: BoolProperty(
+        name="Black world",
+        description="Emission only reads against a dark background. On the default "
+                    "grey world everything looks washed out",
+        default=True,
+    )
+    camara: BoolProperty(
+        name="Camera",
+        description="Creates 'AV_Camera' framing everything the plugin has made, "
+                    "head-on and slightly above. If it already exists it is moved, "
+                    "not duplicated",
+        default=True,
+    )
+    resplandor: BoolProperty(
+        name="Glow",
+        description="Bloom around the bright parts. In Blender 5 this no longer "
+                    "belongs to the engine: it goes through the compositor, and "
+                    "this sets that up for you",
+        default=True,
+    )
+    vista: EnumProperty(
+        name="View transform",
+        description="AgX is Blender's default and it is film-like, but it pulls "
+                    "saturated emission towards white. Standard keeps the colour "
+                    "you dialled in, which usually suits these presets better",
+        items=(('MANTENER', "Leave it alone", "Do not touch colour management"),
+               ('STANDARD', "Standard", "Keeps the emission colour as you set it"),
+               ('AGX', "AgX", "Blender's default, film-like")),
+        default='STANDARD',
+    )
+
+    def execute(self, contexto):
+        escena = contexto.scene
+        hecho = []
+
+        if self.mundo:
+            poner_mundo_negro(escena)
+            hecho.append("world")
+
+        if self.camara:
+            objetos = objetos_del_plugin(escena)
+            centro, esquinas = caja_de(escena, objetos)
+            poner_camara(escena, centro, esquinas)
+            hecho.append(f"camera ({len(objetos)} objects framed)"
+                         if objetos else "camera (nothing to frame yet)")
+
+        if self.resplandor:
+            try:
+                poner_resplandor(escena)
+                hecho.append("glow")
+            except Exception as e:
+                self.report({'WARNING'}, f"Could not set up the glow: {e}")
+
+        if self.vista != 'MANTENER':
+            try:
+                escena.view_settings.view_transform = (
+                    "Standard" if self.vista == 'STANDARD' else "AgX")
+                hecho.append(f"view transform {escena.view_settings.view_transform}")
+            except Exception as e:
+                self.report({'WARNING'}, f"Could not change the view transform: {e}")
+
+        if not hecho:
+            self.report({'INFO'}, "Nothing selected, nothing done")
+            return {'CANCELLED'}
+        self.report({'INFO'}, "Scene ready: " + ", ".join(hecho))
+        return {'FINISHED'}
+
+
 class AV_OT_crear_cuerdas(Operator):
     bl_idname = "audioviz.crear_cuerdas"
     bl_label = "Create strings"
@@ -5989,7 +6207,13 @@ class AV_OT_limpiar(Operator):
             if me.users == 0 and me.name.startswith(PREFIJO_LED):
                 bpy.data.meshes.remove(me)
 
-        for nombre in (NOMBRE_GN_PLEXUS, NOMBRE_GN_ENJAMBRE, NOMBRE_GN_CUERDAS):
+        # Soltar el compositor antes de mirar si sobra: mientras la escena lo
+        # apunte tiene un usuario y no se borraria nunca.
+        if (contexto.scene.compositing_node_group is not None
+                and contexto.scene.compositing_node_group.name == NOMBRE_COMP):
+            contexto.scene.compositing_node_group = None
+        for nombre in (NOMBRE_GN_PLEXUS, NOMBRE_GN_ENJAMBRE, NOMBRE_GN_CUERDAS,
+                       NOMBRE_COMP):
             ng = bpy.data.node_groups.get(nombre)
             if ng is not None and ng.users == 0:
                 bpy.data.node_groups.remove(ng)
@@ -6175,6 +6399,12 @@ class AV_PT_panel(Panel):
             caja.label(text=f"'{img.name}' · {img.size[0]}x{img.size[1]}",
                        icon='IMAGE_DATA')
             caja.label(text="open it in an image editor to see it large")
+
+        # --- dejar la escena presentable ---
+        caja = d.box()
+        caja.label(text="Set up the scene", icon='SCENE')
+        caja.label(text="black world, camera and glow, in one click")
+        caja.operator("audioviz.montar_escena", icon='SHADING_RENDERED')
 
         caja = d.box()
         caja.label(text="Values on this frame", icon='GRAPH')
@@ -6869,6 +7099,7 @@ clases = (AV_AudioAjustes, AV_Ajustes, AV_PaisajeAjustes, AV_EnjambreAjustes,
           AV_OT_detectar_compas, AV_OT_quitar_compas, AV_OT_medio_tempo,
           AV_OT_crear_barras, AV_OT_crear_led, AV_OT_crear_pulso,
           AV_OT_crear_plexus, AV_OT_crear_paisaje, AV_OT_crear_enjambre, AV_OT_crear_cuerdas,
+          AV_OT_montar_escena,
           AV_OT_hornear, AV_OT_regenerar_puntos, AV_OT_ajustar_distancia,
           AV_OT_seleccionar_plexus, AV_OT_material_unico, AV_OT_limpiar,
           AV_PT_panel, AV_PT_barras, AV_PT_led, AV_PT_pulso, AV_PT_plexus,

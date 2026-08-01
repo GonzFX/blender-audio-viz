@@ -91,6 +91,15 @@ There is no simulation behind it. A damped spring's response to a force is a
 convolution, so the plugin looks *backwards* over the recent audio instead of
 carrying state forward. That is what keeps scrubbing and baking working.
 
+### One click to a scene that looks right
+
+These presets are emissive: on Blender's default grey world they look washed out,
+and a fresh scene has no camera at all. **Set up the scene** leaves a black world,
+a camera framing whatever you have made, and glow on the bright parts — which in
+Blender 5 no longer belongs to the engine and has to go through the compositor.
+
+Each part is a checkbox, so it never touches anything you did not ask it to.
+
 ### Seeing the analysis
 
 A button draws the whole track as a spectrogram inside Blender: time across,
