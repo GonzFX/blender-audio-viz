@@ -111,6 +111,21 @@ LICENSE                    GPL-3.0-or-later
 El plugin es un solo archivo de Python. No necesita nada de fuera: usa el
 decodificador de audio y el ffmpeg que Blender ya trae.
 
+### El analizador de fuera (opcional)
+
+En [Releases](../../releases) hay además un `Analizador de audio.exe`: un
+programita con ventana, independiente de Blender, que analiza un audio y deja el
+resultado en un `.json` que el plugin puede importar.
+
+**No hace falta para nada del trabajo normal** —Blender analiza el audio él
+solo—, pero sirve para procesar muchos temas de golpe, para guardar un análisis y
+reutilizarlo sin repetirlo, o para pasarle a alguien el análisis sin pasarle el
+audio.
+
+Va acompañado de `analizador-fuente-1.0.0.zip` con su código, porque la licencia
+es GPL y el fuente tiene que viajar con el binario. Y porque un `.exe` sin firmar
+que descargas de internet merece que puedas mirar qué hace.
+
 ---
 
 ## Estado
