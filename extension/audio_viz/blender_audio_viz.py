@@ -3590,21 +3590,42 @@ def frecuencias_cuerdas(c, n):
     return np.minimum(frec, tope_sin_parpadeo(c))
 
 
+def pico_perfil(n_arm):
+    """Lo mas que se aparta del reposo la suma de modos con amplitud 1.
+
+    Sale de sumar sin(i*pi*u)/i: 1.000 con un armonico, 1.443 con tres, 1.583
+    con ocho.
+    """
+    u = np.linspace(0.0, 1.0, 256)
+    return float(np.abs(sum(np.sin(i * np.pi * u) / i
+                            for i in range(1, max(int(n_arm), 1) + 1))).max())
+
+
 def amplitud_util(c):
-    """La amplitud que se aplica de verdad, acotada si se pidio no cruzarse.
+    """La amplitud vertical NO se acota nunca, y hay una razon geometrica.
 
-    Las cuerdas se quedan SIEMPRE donde estan: lo unico que cambia es cuanto se
-    abren. Probe la alternativa -que una cuerda que se abre aparte a sus
-    vecinas- y quedaba peor: con 24 cuerdas el banco pasaba de 9.7 a 54.8
-    unidades y se convertia en un abanico separadisimo.
+    Las cuerdas se separan en Y y, en vaiven vertical, se mueven solo en Z: son
+    planos paralelos y no pueden tocarse por mucho que se abran. Comprobado
+    subiendo la amplitud de 0.21 a 12.0 -cincuenta y siete veces- sin que la
+    distancia minima entre vecinas se moviera de 0.4200, que es la separacion.
 
-    Que el tope sea la mitad de la separacion no es un numero al azar: medido
-    sobre un tema real, ahi los cruces entre vecinas son exactamente cero,
-    mientras que al doble de la separacion se cruzaba un tercio de los pares.
+    Antes esto estaba acotado, y era un error mio: lo que se veia como cruce en
+    los renders era solape VISUAL por el angulo de camara, que es una decision
+    de encuadre y no un problema de geometria.
+    """
+    return c.amplitud
+
+
+def amplitud_lateral(c):
+    """Lo que se mueve de LADO, que ahi si puede alcanzar a la vecina.
+
+    Solo entra en juego con el vaiven circular, que es el unico que desplaza la
+    cuerda en el mismo eje en el que estan repartidas. Medido: con amplitud 4 y
+    sin acotar, la distancia minima entre vecinas cae a 0.0043.
     """
     if not c.sin_cruces:
         return c.amplitud
-    return min(c.amplitud, c.separacion * 0.5)
+    return min(c.amplitud, c.separacion * 0.5 / pico_perfil(c.armonicos))
 
 
 def tope_sin_parpadeo(c):
@@ -3708,7 +3729,10 @@ def reconstruir_cuerdas(escena, ob):
         pos[:, :, 2] = desp
         if c.plano == 'CIRCULAR':
             # Un desfase de un cuarto de vuelta convierte el vaiven en un giro.
-            lateral = (np.cos(ang + np.pi / 2.0) @ modos) * amplitud[:, None]
+            # Este es el unico caso que mueve la cuerda en el eje en el que
+            # estan repartidas, asi que es el unico donde puede haber cruce.
+            escala = amplitud_lateral(c) / max(amplitud_util(c), 1e-9)
+            lateral = (np.cos(ang + np.pi / 2.0) @ modos) * amplitud[:, None] * escala
             pos[:, :, 1] = pos[:, :, 1] + lateral
 
     # --- a la malla ---
@@ -4486,11 +4510,10 @@ class AV_CuerdasAjustes(PropertyGroup):
     )
     sin_cruces: BoolProperty(
         name="Never cross",
-        description="Caps how wide a string opens at half the spacing, so it can "
-                    "never reach its neighbour. The strings stay exactly where they "
-                    "are: only the swing is limited. Off by default, because with "
-                    "the phases in order the strings weave rather than tangle, and "
-                    "you get about five times the swing",
+        description="Only matters with the circular swing, which is the one that "
+                    "moves a string along the same axis the strings are spread on. "
+                    "A vertical swing can never reach a neighbour however wide it "
+                    "opens: they are parallel planes, so nothing is limited there",
         default=False, update=_al_cambiar_cuerdas,
     )
     ondas: FloatProperty(
@@ -6738,9 +6761,14 @@ class AV_PT_cuerdas(AV_PT_base_preset, Panel):
         col = caja.column(align=True)
         col.label(text="Vibration:")
         col.prop(c, "amplitud")
-        col.prop(c, "sin_cruces")
-        if c.sin_cruces and c.amplitud > c.separacion * 0.5:
-            col.label(text=f"swing capped to {c.separacion*0.5:.2f}", icon='INFO')
+        sub = col.column(align=True)
+        sub.enabled = c.plano == 'CIRCULAR'
+        sub.prop(c, "sin_cruces")
+        if c.plano != 'CIRCULAR':
+            col.label(text="vertical swing cannot cross: no limit", icon='CHECKMARK')
+        elif c.sin_cruces and c.amplitud > amplitud_lateral(c):
+            col.label(text=f"sideways swing capped to {amplitud_lateral(c):.2f}",
+                      icon='INFO')
         col.prop(c, "ondas")
         col.prop(c, "desorden", slider=True)
         col.prop(c, "resonancia", slider=True)
