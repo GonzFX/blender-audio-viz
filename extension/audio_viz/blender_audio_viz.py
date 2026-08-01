@@ -3590,17 +3590,39 @@ def frecuencias_cuerdas(c, n):
     return np.minimum(frec, tope_sin_parpadeo(c))
 
 
-def amplitud_util(c):
-    """La amplitud que se aplica de verdad, acotada si se pidio no cruzarse.
+def pico_perfil(n_arm):
+    """Lo mas que se separa del reposo la suma de modos con amplitud 1.
 
-    Medido sobre un tema real con 24 cuerdas: con la amplitud al doble de la
-    separacion, el 31% de los pares de vecinas se cruzan en cualquier instante
-    y el conjunto se ve como una marana. En la mitad de la separacion los
-    cruces son exactamente cero, que es lo que hace que se lea cuerda a cuerda.
+    Sale de sumar sin(i*pi*u)/i: 1.000 con un armonico, 1.443 con tres, 1.583
+    con ocho. Hace falta para saber cuanto sitio necesita una cuerda.
     """
-    if not c.sin_cruces:
-        return c.amplitud
-    return min(c.amplitud, c.separacion * 0.5)
+    u = np.linspace(0.0, 1.0, 256)
+    return float(np.abs(sum(np.sin(i * np.pi * u) / i
+                            for i in range(1, max(int(n_arm), 1) + 1))).max())
+
+
+def cesion_segura(c):
+    """Cuanto tiene que apartarse una vecina para que NUNCA haya cruce.
+
+    Es el otro camino, y es el bueno. Acotar la amplitud contra la separacion
+    era demasiado severo: medido sobre un tema real, con las cuerdas repartidas
+    en dos octavas solo cabia una amplitud de 0.23, porque cada cuerda vibra a
+    su frecuencia y por muy en fase que arranquen acaban oponiendose.
+
+    Si en cambio la separacion LOCAL crece con lo que se abren las dos vecinas,
+    la garantia sale sola: la diferencia entre ambas no puede pasar de la suma
+    de sus aperturas por el pico del perfil, asi que apartandolas al menos esa
+    cantidad no se tocan nunca, valga lo que valga la amplitud.
+
+    La ventaja para el ojo es que el banco se queda apretado donde hay silencio
+    y se abre solo donde hay energia, en vez de dejar hueco fijo en todas partes.
+    """
+    return pico_perfil(c.armonicos)
+
+
+def amplitud_util(c):
+    """La amplitud que se aplica. Ya no se acota: de eso se encarga la cesion."""
+    return c.amplitud
 
 
 def tope_sin_parpadeo(c):
@@ -3676,7 +3698,18 @@ def reconstruir_cuerdas(escena, ob):
     ang = 2.0 * np.pi * frec[:, None] * armonicos * t + fases[:, None]
     desp = (np.cos(ang) @ modos) * amplitud[:, None]
 
-    # --- colocarlas en el espacio ---
+    # --- donde va cada cuerda, dejandose sitio unas a otras ---
+    # La separacion no es fija: entre dos vecinas crece con lo que se abren las
+    # dos. Asi el banco queda apretado en los silencios y se abre solo donde hay
+    # energia, en vez de repartir hueco por igual en todas partes.
+    ceder = max(c.ceder, cesion_segura(c)) if c.sin_cruces else c.ceder
+    if n > 1 and ceder > 0.0:
+        sep_local = c.separacion + ceder * (amplitud[:-1] + amplitud[1:])
+        carriles = np.concatenate([[0.0], np.cumsum(sep_local)])
+    else:
+        carriles = np.arange(n) * c.separacion
+    carriles = carriles - carriles.mean()
+
     pos = np.zeros((n, seg, 3))
     largo = c.largo
     if c.disposicion == 'CILINDRO':
@@ -3691,17 +3724,16 @@ def reconstruir_cuerdas(escena, ob):
             # Abanico: cada cuerda gira un poco sobre el centro, como un arpa.
             giro = np.linspace(-c.abanico, c.abanico, n) if n > 1 else np.zeros(1)
             pos[:, :, 0] = (u[None, :] - 0.5) * largo * np.cos(giro)[:, None]
-            pos[:, :, 1] = np.arange(n)[:, None] * c.separacion \
+            pos[:, :, 1] = carriles[:, None] \
                 + (u[None, :] - 0.5) * largo * np.sin(giro)[:, None]
         else:
             pos[:, :, 0] = (u[None, :] - 0.5) * largo
-            pos[:, :, 1] = np.arange(n)[:, None] * c.separacion
+            pos[:, :, 1] = carriles[:, None]
         pos[:, :, 2] = desp
         if c.plano == 'CIRCULAR':
             # Un desfase de un cuarto de vuelta convierte el vaiven en un giro.
             lateral = (np.cos(ang + np.pi / 2.0) @ modos) * amplitud[:, None]
             pos[:, :, 1] = pos[:, :, 1] + lateral
-    pos[:, :, 1] -= pos[:, :, 1].mean()
 
     # --- a la malla ---
     me = ob.data
@@ -4473,17 +4505,23 @@ class AV_CuerdasAjustes(PropertyGroup):
     amplitud: FloatProperty(
         name="Amplitude",
         description="How wide a string opens when its band is at full",
-        default=0.6, min=0.0, soft_max=10.0, unit='LENGTH',
+        default=1.0, min=0.0, soft_max=10.0, unit='LENGTH',
         update=_al_cambiar_cuerdas,
     )
+    ceder: FloatProperty(
+        name="Make room",
+        description="A string that opens pushes its neighbours aside, so the bank "
+                    "stays tight where it is quiet and only spreads where there is "
+                    "energy. This is what lets the strings swing wide without "
+                    "either crossing or leaving a fixed gap everywhere",
+        default=0.0, min=0.0, soft_max=4.0, update=_al_cambiar_cuerdas,
+    )
     sin_cruces: BoolProperty(
-        name="Keep them apart",
-        description="Caps the amplitude at half the spacing so no string ever "
-                    "crosses its neighbour. Measured on a real track with 24 "
-                    "strings: at twice the spacing, a third of the neighbouring "
-                    "pairs overlap at any moment and it reads as a tangle. "
-                    "Turn it off if you want them to weave through each other",
-        default=True, update=_al_cambiar_cuerdas,
+        name="Never cross",
+        description="Raises 'Make room' to whatever guarantees no string can reach "
+                    "its neighbour, however wide it swings. Turn it off if you want "
+                    "them to weave through each other",
+        default=False, update=_al_cambiar_cuerdas,
     )
     ondas: FloatProperty(
         name="Waves across",
@@ -4497,7 +4535,7 @@ class AV_CuerdasAjustes(PropertyGroup):
         description="Scatters the strings' phases on top of the wave. At 0 the "
                     "movement is perfectly ordered; raise it for something more "
                     "alive, and at 1 each string goes entirely its own way",
-        default=0.15, min=0.0, max=1.0, update=_al_cambiar_cuerdas,
+        default=0.0, min=0.0, max=1.0, update=_al_cambiar_cuerdas,
     )
     resonancia: FloatProperty(
         name="Ring",
@@ -6730,9 +6768,10 @@ class AV_PT_cuerdas(AV_PT_base_preset, Panel):
         col = caja.column(align=True)
         col.label(text="Vibration:")
         col.prop(c, "amplitud")
+        col.prop(c, "ceder")
         col.prop(c, "sin_cruces")
-        if c.sin_cruces and c.amplitud > c.separacion * 0.5:
-            col.label(text=f"capped to {c.separacion*0.5:.2f} so they do not cross",
+        if c.sin_cruces and c.ceder < cesion_segura(c):
+            col.label(text=f"raised to {cesion_segura(c):.2f}, the safe value",
                       icon='INFO')
         col.prop(c, "ondas")
         col.prop(c, "desorden", slider=True)
