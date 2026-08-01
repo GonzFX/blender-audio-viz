@@ -79,11 +79,10 @@ PREFIJO_BANDA_IZQ = "band_izq_"
 PREFIJO_BANDA_DER = "band_der_"
 
 CANALES = (
-    ('MONO', "Mono", "Los dos canales mezclados, como hasta ahora"),
-    ('IZQ', "Solo el izquierdo", "Reacciona nada mas al canal izquierdo"),
-    ('DER', "Solo el derecho", "Reacciona nada mas al canal derecho"),
-    ('ESTEREO', "Estereo", "El lado izquierdo del objeto sigue al canal izquierdo "
-                           "y el derecho al derecho"),
+    ('MONO', "Mono", "Both channels mixed, as before"),
+    ('IZQ', "Left only", "Reacts to the left channel only"),
+    ('DER', "Right only", "Reacts to the right channel only"),
+    ('ESTEREO', "Stereo", "The left side of the object follows the left channel and the right side the right one"),
 )
 
 # Preset 1: ecualizador de LEDs
@@ -1583,27 +1582,25 @@ def _al_cambiar_pulso_vis(self, contexto):
 # malla de puntos y aristas que le entra.
 
 FORMAS = (
-    ('ESFERA', "Esfera", "Puntos repartidos por la superficie de una esfera"),
-    ('REJILLA', "Rejilla", "Cuadricula plana; los puntos suben y bajan como un terreno"),
-    ('NUBE', "Nube", "Puntos sueltos dentro de un volumen esferico"),
-    ('ANILLO', "Anillo", "Puntos en circulo que respiran hacia fuera"),
-    ('SUPERFICIE', "Piel de un modelo",
-     "Puntos repartidos por la superficie de un objeto de la escena; se mueven "
-     "hacia fuera siguiendo la normal, como una piel que respira"),
-    ('VOLUMEN', "Interior de un modelo",
-     "Puntos sueltos por dentro de un objeto de la escena; se mueven en radial "
-     "desde su centro"),
+    ('ESFERA', "Sphere", "Points spread over the surface of a sphere"),
+    ('REJILLA', "Grid", "A flat grid; the points rise and fall like terrain"),
+    ('NUBE', "Cloud", "Loose points inside a spherical volume"),
+    ('ANILLO', "Ring", "Points in a circle breathing outwards"),
+    ('SUPERFICIE', "Model surface",
+     "Points spread over the surface of a scene object; they move outwards along the normal, like a breathing skin"),
+    ('VOLUMEN', "Model volume",
+     "Loose points inside a scene object; they move radially from its centre"),
 )
 
 FORMAS_DE_MODELO = {'SUPERFICIE', 'VOLUMEN'}
 
 ASIGNACIONES = (
-    ('RADIAL', "Radial", "La banda depende de la distancia al eje vertical"),
-    ('VERTICAL', "Vertical", "La banda depende de la altura: graves abajo, agudos arriba"),
-    ('HORIZONTAL', "Horizontal", "La banda depende de la posicion en X, como un espectro tumbado"),
-    ('ANGULO', "Angular", "Las bandas dan la vuelta alrededor del centro"),
-    ('INDICE', "Alterna", "Punto 1 banda 0, punto 2 banda 1... se entremezclan"),
-    ('ALEATORIA', "Aleatoria", "Cada punto recibe una banda al azar"),
+    ('RADIAL', "Radial", "The band depends on the distance to the vertical axis"),
+    ('VERTICAL', "Vertical", "The band depends on height: lows at the bottom, highs at the top"),
+    ('HORIZONTAL', "Horizontal", "The band depends on the X position, like a spectrum laid down"),
+    ('ANGULO', "Angular", "The bands go around the centre"),
+    ('INDICE', "Alternating", "Point 1 band 0, point 2 band 1... they interleave"),
+    ('ALEATORIA', "Random", "Each point gets a random band"),
 )
 
 
@@ -2295,16 +2292,16 @@ def escribir_caras(plexus, puntos, pares, niveles, intensidades):
 # por eso el paisaje respeta el ataque y la caida que tengas puestos.
 
 DIRECCIONES = (
-    ('SUR', "Hacia el sur (-Y)", "El relieve viene de lejos y se acerca al observador"),
-    ('NORTE', "Hacia el norte (+Y)", "El relieve se aleja del observador"),
-    ('OESTE', "Hacia el oeste (-X)", "Avanza hacia la izquierda"),
-    ('ESTE', "Hacia el este (+X)", "Avanza hacia la derecha"),
+    ('SUR', "Southward (-Y)", "The relief comes from afar and approaches the viewer"),
+    ('NORTE', "Northward (+Y)", "The relief moves away from the viewer"),
+    ('OESTE', "Westward (-X)", "Travels to the left"),
+    ('ESTE', "Eastward (+X)", "Travels to the right"),
 )
 
 MODOS_PAISAJE = (
-    ('SOLIDO', "Solido", "Solo la superficie"),
-    ('MALLA', "Malla", "Solo los hilos de la rejilla, en plan retro"),
-    ('AMBOS', "Solido + malla", "La superficie con la rejilla marcada encima"),
+    ('SOLIDO', "Solid", "The surface only"),
+    ('MALLA', "Wireframe", "Just the grid wires, retro style"),
+    ('AMBOS', "Solid + wireframe", "The surface with the grid drawn on top"),
 )
 
 
@@ -3043,19 +3040,18 @@ def reconstruir_plexus(escena, ob):
 # empuje radial y las ondas, que para leer musica da de sobra.
 
 FORMAS_ENJAMBRE = (
-    ('DISCO', "Disco", "Plano, tipo galaxia. Es el que mejor lee el espectro de un vistazo"),
-    ('ESFERA', "Esfera", "Nube en volumen. Envuelve mas, pero tapa sus propias particulas"),
-    ('ANILLO', "Anillo", "Solo el borde, con el centro vacio"),
+    ('DISCO', "Disc", "Flat, galaxy style. This is the one that reads the spectrum best at a glance"),
+    ('ESFERA', "Sphere", "A cloud with volume. More enveloping, but it hides its own particles"),
+    ('ANILLO', "Ring", "The rim only, with an empty centre"),
 )
 
 REPARTOS_ENJAMBRE = (
-    ('RADIO', "Del centro al borde",
-     "Los graves en el centro y los agudos fuera. El espectro se lee como una diana"),
-    ('ANGULO', "Alrededor",
-     "El espectro da la vuelta al circulo, como las horas de un reloj"),
-    ('AZAR', "Mezcladas",
-     "Cada particula coge una banda al azar. Parece un enjambre de verdad, "
-     "pero se pierde el ecualizador"),
+    ('RADIO', "Centre to rim",
+     "Lows in the centre and highs outside. The spectrum reads like a dartboard"),
+    ('ANGULO', "Around",
+     "The spectrum goes around the circle, like the hours on a clock"),
+    ('AZAR', "Mixed",
+     "Each particle takes a random band. It looks like a real swarm, but you lose the equalizer"),
 )
 
 
@@ -3701,37 +3697,31 @@ class AV_AudioAjustes(PropertyGroup):
     cada Empty lleva los suyos: su suavizado, sus fps y de que archivo vino."""
 
     es_fuente: BoolProperty(default=False)
-    archivo: StringProperty(name="Archivo", default="")
+    archivo: StringProperty(name="File", default="")
     info: StringProperty(name="info", default="")
     ruta_audio: StringProperty(name="Audio", default="", subtype='FILE_PATH')
     tira_sonido: StringProperty(default="")
     oir_audio: BoolProperty(
-        name="Oir este audio",
-        description="Silencia o deja sonar la pista de este audio en el secuenciador. "
-                    "Al analizar, el archivo se mete siempre; esto solo decide si suena. "
-                    "Activarlo enciende tambien el sonido al arrastrar el cursor",
+        name="Hear this audio",
+        description="Mutes or unmutes this audio's strip in the sequencer. When you analyze, the file is always added; this only decides whether you hear it. Turning it on also enables audio while scrubbing",
         default=True, update=_al_cambiar_oir_audio,
     )
 
     fps: IntProperty(
-        name="FPS del analisis",
-        description="Los mismos --fps que usaste en analiza_audio.py para ESTE archivo",
+        name="Analysis FPS",
+        description="The same --fps you used in analiza_audio.py for THIS file",
         default=24, min=1, max=240,
         update=_al_mover_suavizado,  # el suavizado va en segundos: depende de los fps
     )
     ataque: FloatProperty(
-        name="Ataque (s)",
-        description="Segundos que tarda el valor en SUBIR de 0 a 1 como mucho. "
-                    "0 = subida instantanea, que suele ser lo que quieres para que el "
-                    "golpe entre seco. Subelo para dar sensacion de peso o inercia",
+        name="Attack (s)",
+        description="Seconds the value takes to RISE from 0 to 1 at most. 0 = instant rise, which is usually what you want so the hit lands sharp. Raise it to suggest weight or inertia",
         default=0.0, min=0.0, soft_max=1.0, max=30.0, precision=2, step=5,
         update=_al_mover_suavizado,
     )
     caida: FloatProperty(
-        name="Caida (s)",
-        description="Segundos que tarda un pico en BAJAR de 1 a 0 como mucho. "
-                    "0 = caida instantanea (sigue al audio tal cual). Mas segundos = cola "
-                    "mas larga, como el release de un compresor",
+        name="Decay (s)",
+        description="Seconds a peak takes to FALL from 1 to 0 at most. 0 = instant fall (follows the audio exactly). More seconds = a longer tail, like a compressor's release",
         default=0.0, min=0.0, soft_max=2.0, max=30.0, precision=2, step=5,
         update=_al_mover_suavizado,
     )
@@ -3740,35 +3730,32 @@ class AV_AudioAjustes(PropertyGroup):
     compas_activo: BoolProperty(default=False)
     bpm: FloatProperty(
         name="BPM",
-        description="Pulsos por minuto. Lo pone el detector, pero puedes corregirlo a "
-                    "mano si sabes el tempo exacto del tema",
+        description="Beats per minute. The detector fills it in, but you can correct it by hand if you know the track's exact tempo",
         default=120.0, min=20.0, max=400.0, precision=2, step=10,
         update=_al_cambiar_compas,
     )
     desfase_compas: FloatProperty(
-        name="Desfase (fotogramas)",
-        description="Donde cae el primer pulso. Muevelo si el ritmo va adelantado o "
-                    "atrasado respecto a la musica",
+        name="Offset (frames)",
+        description="Where the first beat falls. Move it if the rhythm runs ahead of or behind the music",
         default=0.0, min=-10000.0, max=10000.0, precision=2,
         update=_al_cambiar_compas,
     )
     pulsos_por_compas: IntProperty(
-        name="Pulsos por compas",
-        description="4 para un 4/4 normal, 3 para un vals",
+        name="Beats per bar",
+        description="4 for a normal 4/4, 3 for a waltz",
         default=4, min=1, max=16, update=_al_cambiar_compas,
     )
     caida_pulso: FloatProperty(
-        name="Caida del pulso (s)",
-        description="Cuanto tarda 'pulso' en bajar de 1 a 0 tras cada golpe",
+        name="Beat decay (s)",
+        description="How long 'pulso' takes to fall from 1 to 0 after each beat",
         default=0.25, min=0.01, soft_max=2.0, max=10.0, precision=2,
         update=_al_cambiar_compas,
     )
     banda_min_compas: IntProperty(
-        name="Detectar desde", default=0, min=0, max=31,
-        description="Bandas que se miran para encontrar el ritmo. Las graves suelen "
-                    "llevar el bombo; si el tema no tiene bateria, prueba con todas",
+        name="Detect from", default=0, min=0, max=31,
+        description="Which bands are looked at to find the rhythm. The low ones usually carry the kick; if the track has no drums, try all of them",
     )
-    banda_max_compas: IntProperty(name="hasta", default=3, min=0, max=31)
+    banda_max_compas: IntProperty(name="to", default=3, min=0, max=31)
     bpm_detectado: FloatProperty(default=0.0)
     # 0..1. Normalmente es la fraccion de trozos del tema que coinciden en el
     # tempo; en temas cortos, que no se pueden partir, cae en la medida vieja.
@@ -3778,8 +3765,8 @@ class AV_AudioAjustes(PropertyGroup):
     compas_acuerdo: IntProperty(default=0)
     compas_trozos: IntProperty(default=0)
     marcadores: BoolProperty(
-        name="Marcadores en la linea de tiempo",
-        description="Pone una marca al principio de cada compas, para verlo al hacer scrub",
+        name="Timeline markers",
+        description="Places a marker at the start of every bar, so you can see it while scrubbing",
         default=False, update=_al_cambiar_marcadores,
     )
 
@@ -3789,40 +3776,36 @@ class AV_Ajustes(PropertyGroup):
     crear presets. El suavizado ya no vive aqui, sino en cada fuente."""
 
     fuente: PointerProperty(
-        name="Fuente activa",
-        description="Sobre que audio actuan el suavizado y los botones de crear presets",
+        name="Active source",
+        description="Which audio the smoothing and the preset buttons act on",
         type=bpy.types.Object, poll=_poll_fuente,
     )
 
     ruta_json: StringProperty(
-        name="Archivo JSON",
-        description="Un .json ya analizado (por este mismo plugin o por analiza_audio.py)",
+        name="JSON file",
+        description="An already analyzed .json (by this plugin or by analiza_audio.py)",
         subtype='FILE_PATH',
     )
     fotograma_inicial: IntProperty(
-        name="Fotograma inicial",
-        description="A que fotograma de Blender corresponde el fotograma 0 del audio",
+        name="Start frame",
+        description="Which Blender frame corresponds to frame 0 of the audio",
         default=1,
     )
     fps: IntProperty(
         name="FPS",
-        description="Fotogramas por segundo del analisis. Al analizar aqui, lo normal es "
-                    "dejarlo igual que la escena. Al cargar un .json de fuera tiene que "
-                    "coincidir con el --fps con el que se genero, o se ira desincronizando",
+        description="Frames per second of the analysis. When analyzing here, normally leave it the same as the scene. When loading an outside .json it must match the --fps it was generated with, or it will drift out of sync",
         default=24, min=1, max=240,
     )
 
     # ---- ajustes del analisis (solo al analizar dentro de Blender) ----
     mostrar_avanzado: BoolProperty(default=False)
     bandas: IntProperty(
-        name="Bandas", description="En cuantas bandas se reparte el espectro",
+        name="Bands", description="How many bands the spectrum is split into",
         default=8, min=1, max=32,
     )
     ventana: EnumProperty(
-        name="Ventana FFT",
-        description="Muestras por FFT. Mas grande = mas detalle en los graves pero "
-                    "transitorios mas emborronados. Es el mismo dilema que velocidad de "
-                    "obturacion contra motion blur",
+        name="FFT window",
+        description="Samples per FFT. Larger = more detail in the lows but smearier transients. It is the same trade-off as shutter speed against motion blur",
         items=(('512', "512", "Muy seca, poca resolucion en graves"),
                ('1024', "1024", "Seca"),
                ('2048', "2048", "Equilibrada (recomendada a 24 fps)"),
@@ -3830,163 +3813,150 @@ class AV_Ajustes(PropertyGroup):
                ('8192', "8192", "Solo para material muy grave y lento")),
         default='2048',
     )
-    fmin: FloatProperty(name="Graves desde (Hz)", default=30.0, min=1.0, max=20000.0)
-    fmax: FloatProperty(name="Agudos hasta (Hz)", default=16000.0, min=2.0, max=30000.0)
+    fmin: FloatProperty(name="Lows from (Hz)", default=30.0, min=1.0, max=20000.0)
+    fmax: FloatProperty(name="Highs up to (Hz)", default=16000.0, min=2.0, max=30000.0)
     rango_db: FloatProperty(
-        name="Rango dinamico (dB)",
-        description="Cuantos dB por debajo del pico se consideran 0. Menos = mas contraste",
+        name="Dynamic range (dB)",
+        description="How many dB below the peak count as 0. Less = more contrast",
         default=60.0, min=6.0, max=140.0,
     )
     canal_analisis: EnumProperty(
-        name="Ver el canal",
-        items=(('MONO', "Mono", "La mezcla"),
-               ('IZQ', "Izquierdo", "Solo el canal izquierdo"),
-               ('DER', "Derecho", "Solo el canal derecho")),
+        name="Show channel",
+        items=(('MONO', "Mono", "The mix"),
+               ('IZQ', "Left", "The left channel only"),
+               ('DER', "Right", "The right channel only")),
         default='MONO',
     )
     analizar_estereo: BoolProperty(
-        name="Analizar en estereo",
-        description="Analiza los dos canales por separado, ademas de la mezcla. Triplica "
-                    "el tiempo de analisis y el tamano de los datos, asi que solo merece "
-                    "la pena si vas a usarlo. Si el archivo es mono no hace nada",
+        name="Analyze in stereo",
+        description="Analyzes both channels separately, on top of the mix. It triples the analysis time and the data size, so it is only worth it if you will use it. If the file is mono it does nothing",
         default=False,
     )
     norm: EnumProperty(
-        name="Normalizar",
-        items=(('BANDA', "Por banda", "Cada banda contra su propio pico: mas vistoso"),
-               ('GLOBAL', "Global", "Un unico pico para todas: mas fiel, mandan los graves")),
+        name="Normalize",
+        items=(('BANDA', "Per band", "Each band against its own peak: showier"),
+               ('GLOBAL', "Global", "A single peak for all: truer, the lows rule")),
         default='BANDA',
     )
     guardar_json: BoolProperty(
-        name="Guardar tambien el .json",
-        description="Deja el analisis en un .json junto al audio, para reutilizarlo sin "
-                    "volver a analizar o pasarselo a otra persona",
+        name="Also save the .json",
+        description="Leaves the analysis in a .json next to the audio, to reuse without analyzing again or to pass on to someone else",
         default=False,
     )
     ajustar_escena: BoolProperty(
-        name="Ajustar la escena",
-        description="Pone los fps y el rango de la linea de tiempo para que cuadren con el audio",
+        name="Adjust the scene",
+        description="Sets the fps and the timeline range to match the audio",
         default=True,
     )
     detectar_compas_al_cargar: BoolProperty(
-        name="Detectar el compas al cargar",
-        description="Busca el tempo nada mas analizar, sin tener que pulsar nada. "
-                    "Cuesta unas decimas de segundo. Si el tema no tiene un ritmo "
-                    "claro no pasa nada: lo dice y sigue",
+        name="Detect beat on load",
+        description="Looks for the tempo right after analyzing, without you pressing anything. It costs a few tenths of a second. If the track has no clear rhythm nothing breaks: it says so and carries on",
         default=True,
     )
 
     altura: FloatProperty(
-        name="Altura maxima",
-        description="Cuanto mide la barra cuando la banda vale 1.0",
+        name="Maximum height",
+        description="How tall the bar is when its band reads 1.0",
         default=4.0, min=0.01, soft_max=20.0, unit='LENGTH',
         update=_al_cambiar_drivers_barras,
     )
     base: FloatProperty(
-        name="Altura minima",
-        description="Cuanto mide la barra en silencio (para que no desaparezca)",
+        name="Minimum height",
+        description="How tall the bar is in silence (so it does not vanish)",
         default=0.05, min=0.0, soft_max=2.0, unit='LENGTH',
         update=_al_cambiar_drivers_barras,
     )
     ancho: FloatProperty(
-        name="Ancho",
+        name="Width",
         default=0.8, min=0.01, soft_max=5.0, unit='LENGTH',
     )
     separacion: FloatProperty(
-        name="Separacion",
-        description="Distancia entre los centros de dos barras",
+        name="Spacing",
+        description="Distance between the centres of two bars",
         default=1.0, min=0.01, soft_max=10.0, unit='LENGTH',
     )
     emision: BoolProperty(
-        name="Material emisivo reactivo",
-        description="Crea materiales de emision cuyo brillo tambien sigue a la banda",
+        name="Reactive emissive material",
+        description="Creates emission materials whose brightness also follows the band",
         default=True,
     )
     fuerza_emision: FloatProperty(
-        name="Brillo maximo",
-        description="Emision cuando la banda vale 1.0. Por encima de ~5 el view "
-                    "transform AgX de Blender lava el color hacia el blanco",
+        name="Maximum brightness",
+        description="Emission when the band reads 1.0. Above about 5, Blender's AgX view transform washes the colour towards white",
         default=3.0, min=0.0, soft_max=50.0,
     )
     barras_canal: EnumProperty(
-        name="Canal", items=CANALES, default='MONO',
-        description="En estereo se hacen el doble de barras, en espejo: los graves al "
-                    "centro y los agudos a los extremos, el canal izquierdo a la izquierda",
+        name="Channel", items=CANALES, default='MONO',
+        description="In stereo you get twice as many bars, mirrored: lows in the centre and highs at the edges, left channel on the left",
         update=_al_cambiar_drivers_barras,
     )
     barras_pulso: FloatProperty(
-        name="Golpe del compas",
-        description="Cuanto sube cada barra de golpe en cada pulso, ademas de lo que "
-                    "haga su banda. Necesita el compas detectado",
+        name="Beat kick",
+        description="How much each bar jumps on every beat, on top of whatever its band does. Needs the beat detected",
         default=0.0, min=0.0, soft_max=5.0, unit='LENGTH',
         update=_al_cambiar_drivers_barras,
     )
 
     # ---- preset 1: ecualizador de LEDs ----
     led_segmentos: IntProperty(
-        name="Segmentos",
-        description="Cubos por columna. Cuantos mas, mas fina la escala y menos retro",
+        name="Segments",
+        description="Cubes per column. The more there are, the finer the scale and the less retro it looks",
         default=12, min=2, max=64,
     )
-    led_ancho: FloatProperty(name="Ancho del cubo", default=0.7, min=0.01, soft_max=3.0, unit='LENGTH')
-    led_alto: FloatProperty(name="Alto del cubo", default=0.22, min=0.01, soft_max=3.0, unit='LENGTH')
+    led_ancho: FloatProperty(name="Cube width", default=0.7, min=0.01, soft_max=3.0, unit='LENGTH')
+    led_alto: FloatProperty(name="Cube height", default=0.22, min=0.01, soft_max=3.0, unit='LENGTH')
     led_paso: FloatProperty(
-        name="Paso vertical",
-        description="Distancia entre los centros de dos cubos de la misma columna. "
-                    "Si es mayor que el alto, queda hueco entre ellos",
+        name="Vertical step",
+        description="Distance between the centres of two cubes in the same column. If it is larger than the height, gaps appear between them",
         default=0.34, min=0.01, soft_max=3.0, unit='LENGTH',
     )
-    led_separacion: FloatProperty(name="Separacion de columnas", default=1.0, min=0.01,
+    led_separacion: FloatProperty(name="Column spacing", default=1.0, min=0.01,
                                   soft_max=10.0, unit='LENGTH')
     led_dureza: FloatProperty(
-        name="Dureza",
-        description="Como de brusco es el encendido. Alto = digital seco, bajo = el "
-                    "segmento de arriba se enciende gradualmente",
+        name="Hardness",
+        description="How abrupt the switch-on is. High = dry and digital, low = the top segment fades in gradually",
         default=40.0, min=1.0, soft_max=100.0,
         update=_al_cambiar_drivers_led,
     )
     led_brillo: FloatProperty(
-        name="Brillo encendido",
-        description="Por encima de ~4 el view transform AgX lava el verde y el rojo "
-                    "hacia el pastel y se pierde el aire de vumetro",
+        name="Lit brightness",
+        description="Above about 4 the AgX view transform washes green and red towards pastel and the VU-meter feel is lost",
         default=2.5, min=0.0, soft_max=50.0,
     )
     led_apagado: FloatProperty(
-        name="Brillo apagado",
-        description="Los segmentos apagados no desaparecen: quedan tenues, como los "
-                    "LEDs de verdad",
+        name="Unlit brightness",
+        description="Unlit segments do not disappear: they stay dim, like real LEDs",
         default=0.05, min=0.0, soft_max=2.0,
     )
     led_canal: EnumProperty(
-        name="Canal", items=CANALES, default='MONO',
-        description="En estereo se hacen el doble de columnas, en espejo",
+        name="Channel", items=CANALES, default='MONO',
+        description="In stereo you get twice as many columns, mirrored",
         update=_al_cambiar_drivers_led,
     )
     led_pulso: FloatProperty(
-        name="Golpe del compas",
-        description="En cada pulso se encienden segmentos de mas, como si la aguja "
-                    "pegara un salto. Necesita el compas detectado",
+        name="Beat kick",
+        description="On every beat a few extra segments light up, as if the needle jumped. Needs the beat detected",
         default=0.0, min=0.0, max=1.0,
         update=_al_cambiar_drivers_led,
     )
 
     # ---- preset: el compas en cubos ----
-    pulso_lado: FloatProperty(name="Lado del cubo", default=0.8, min=0.01,
+    pulso_lado: FloatProperty(name="Cube size", default=0.8, min=0.01,
                               soft_max=5.0, unit='LENGTH',
                               update=_al_cambiar_pulso_vis)
-    pulso_separacion: FloatProperty(name="Separacion", default=1.3, min=0.01,
+    pulso_separacion: FloatProperty(name="Spacing", default=1.3, min=0.01,
                                     soft_max=10.0, unit='LENGTH',
                                     update=_al_cambiar_pulso_vis)
     pulso_crecimiento: FloatProperty(
-        name="Cuanto crece",
-        description="Cuanto se estira el cubo en su tiempo. 1.5 = un cubo y medio mas alto",
+        name="How much it grows",
+        description="How much the cube stretches on its beat. 1.5 = one and a half cubes taller",
         default=1.5, min=0.0, soft_max=8.0, update=_al_cambiar_pulso_vis,
     )
-    pulso_brillo: FloatProperty(name="Brillo en su tiempo", default=6.0, min=0.0,
+    pulso_brillo: FloatProperty(name="Brightness on its beat", default=6.0, min=0.0,
                                 soft_max=40.0, update=_al_cambiar_pulso_vis)
     pulso_apagado: FloatProperty(
-        name="Brillo en reposo",
-        description="Los cubos que no tocan no desaparecen: se quedan tenues",
+        name="Resting brightness",
+        description="The cubes that are not due do not disappear: they stay dim",
         default=0.4, min=0.0, soft_max=5.0, update=_al_cambiar_pulso_vis,
     )
 
@@ -3997,162 +3967,141 @@ class AV_PaisajeAjustes(PropertyGroup):
     es_paisaje: BoolProperty(default=False)
     fuente: PointerProperty(
         name="Audio",
-        description="Que audio dibuja el relieve",
+        description="Which audio draws the relief",
         type=bpy.types.Object, poll=_poll_fuente, update=_al_cambiar_paisaje,
     )
 
     filas: IntProperty(
-        name="Filas (tiempo)",
-        description="Cuantos instantes del pasado se ven a la vez. Mas filas = horizonte "
-                    "mas profundo y malla mas densa",
+        name="Rows (time)",
+        description="How many moments of the past are visible at once. More rows = a deeper horizon and a denser mesh",
         default=64, min=2, soft_max=160, max=512, update=_al_cambiar_paisaje,
     )
     columnas: IntProperty(
-        name="Columnas por copia",
-        description="Resolucion a lo ancho de UNA copia. Las bandas se interpolan entre "
-                    "columnas",
+        name="Columns per copy",
+        description="Resolution across ONE copy. The bands are interpolated between columns",
         default=64, min=2, soft_max=160, max=512, update=_al_cambiar_paisaje,
     )
     repeticiones: IntProperty(
-        name="Copias a lo ancho",
-        description="Repite el paisaje a los lados para llenar mas pantalla. Cada copia "
-                    "mide lo que diga 'Ancho', asi que el total crece con ellas",
+        name="Copies across",
+        description="Repeats the landscape sideways to fill more screen. Each copy is as wide as 'Width' says, so the total grows with them",
         default=1, min=1, max=12, update=_al_cambiar_paisaje,
     )
     espejo: BoolProperty(
-        name="Copias en espejo",
-        description="Alterna el sentido de cada copia -grave a agudo, agudo a grave- para "
-                    "que en la union coincidan y no se vea la costura",
+        name="Mirror copies",
+        description="Alternates the direction of each copy -low to high, high to low- so they match at the join and the seam does not show",
         default=True, update=_al_cambiar_paisaje,
     )
-    ancho: FloatProperty(name="Ancho", default=12.0, min=0.01, soft_max=100.0,
+    ancho: FloatProperty(name="Width", default=12.0, min=0.01, soft_max=100.0,
                          unit='LENGTH', update=_al_cambiar_paisaje)
-    largo: FloatProperty(name="Fondo", default=16.0, min=0.01, soft_max=200.0,
+    largo: FloatProperty(name="Depth", default=16.0, min=0.01, soft_max=200.0,
                          unit='LENGTH', update=_al_cambiar_paisaje)
     altura: FloatProperty(
-        name="Altura de las montanas",
-        description="Cuanto se levanta el relieve cuando la banda vale 1.0",
+        name="Mountain height",
+        description="How high the relief rises when the band reads 1.0",
         default=2.5, min=0.0, soft_max=30.0, unit='LENGTH', update=_al_cambiar_paisaje,
     )
-    direccion: EnumProperty(name="Avanza", items=DIRECCIONES, default='SUR',
+    direccion: EnumProperty(name="Travels", items=DIRECCIONES, default='SUR',
                             update=_al_cambiar_paisaje)
     fotogramas_por_fila: FloatProperty(
-        name="Fotogramas por fila",
-        description="Cuanto tiempo cubre cada fila. Con 1 el relieve avanza una fila por "
-                    "fotograma; con 2 avanza media (mas lento, pero se ve el doble de "
-                    "historia); con 0.5 avanza dos (mas rapido y con mas detalle)",
+        name="Frames per row",
+        description="How much time each row covers. At 1 the relief advances one row per frame; at 2 it advances half a row (slower, but you see twice the history); at 0.5 it advances two (faster and with more detail)",
         default=1.0, min=0.05, soft_max=6.0, max=60.0, precision=2,
         update=_al_cambiar_paisaje,
     )
     canal: EnumProperty(
-        name="Canal", items=CANALES, default='MONO',
-        description="En estereo, el lado izquierdo del terreno sigue al canal izquierdo "
-                    "y el derecho al derecho",
+        name="Channel", items=CANALES, default='MONO',
+        description="In stereo, the left side of the terrain follows the left channel and the right side the right one",
         update=_al_cambiar_paisaje,
     )
-    banda_min: IntProperty(name="De la banda", default=0, min=0, max=31,
+    banda_min: IntProperty(name="From band", default=0, min=0, max=31,
                            update=_al_cambiar_paisaje)
-    banda_max: IntProperty(name="a la", default=7, min=0, max=31,
+    banda_max: IntProperty(name="to", default=7, min=0, max=31,
                            update=_al_cambiar_paisaje)
     suave: BoolProperty(
-        name="Interpolar entre bandas",
-        description="Relieve continuo. Desactivalo para que salgan crestas rectas, una "
-                    "por banda, en plan ecualizador",
+        name="Interpolate between bands",
+        description="Continuous relief. Turn it off to get straight ridges, one per band, equalizer style",
         default=True, update=_al_cambiar_paisaje,
     )
 
     # ---- moldear el relieve ----
     ganancia: FloatProperty(
-        name="Ganancia",
-        description="Multiplica toda la altura. Por encima de 1 las cumbres se aplanan "
-                    "contra el techo, que tambien es un efecto util",
+        name="Gain",
+        description="Multiplies the whole height. Above 1 the peaks flatten against the ceiling, which is a useful effect too",
         default=1.0, min=0.0, soft_max=4.0, max=20.0, update=_al_cambiar_paisaje,
     )
     curva: FloatProperty(
-        name="Curva",
-        description="Reparte el relieve. Por debajo de 1 levanta los valles y sale "
-                    "terreno por todas partes; por encima de 1 aplasta todo menos los "
-                    "picos y quedan montanas sueltas sobre un llano",
+        name="Curve",
+        description="Redistributes the relief. Below 1 it lifts the valleys and you get terrain everywhere; above 1 it flattens everything but the peaks and you get lone mountains on a plain",
         default=1.0, min=0.05, soft_max=4.0, max=10.0, update=_al_cambiar_paisaje,
     )
     inclinacion: FloatProperty(
-        name="Balance graves/agudos",
-        description="Una balanza entre los dos extremos del espectro, como un ecualizador "
-                    "de inclinacion. Hacia -1 mandan los graves; hacia +1 los agudos, que "
-                    "de natural son mucho mas debiles",
+        name="Lows/highs balance",
+        description="A balance between the two ends of the spectrum, like a tilt equalizer. Towards -1 the lows rule; towards +1 the highs, which are naturally much weaker",
         default=0.0, min=-1.0, max=1.0, update=_al_cambiar_paisaje,
     )
     suelo: FloatProperty(
-        name="Suelo",
-        description="Levanta el terreno entero para que los valles no queden planos",
+        name="Floor",
+        description="Lifts the whole terrain so the valleys are not left flat",
         default=0.0, min=0.0, max=1.0, update=_al_cambiar_paisaje,
     )
     pulso_altura: FloatProperty(
-        name="Cresta del compas",
-        description="Cada golpe levanta la fila que le corresponde, y como las filas "
-                    "avanzan, esa cresta viaja por el terreno: se ve el ritmo alejandose "
-                    "hacia el horizonte. Necesita el compas detectado",
+        name="Beat ridge",
+        description="Every beat lifts the row it belongs to, and because the rows travel, that ridge moves across the terrain: you see the rhythm receding towards the horizon. Needs the beat detected",
         default=0.0, min=0.0, max=1.0, update=_al_cambiar_paisaje,
     )
     pulso_extension: FloatProperty(
-        name="Ancho de la cresta",
-        description="Cuanto del espectro abarca. Con 1 es una cresta recta de lado a "
-                    "lado, que parece un escalon; bajandolo se concentra en los graves y "
-                    "queda una loma que nace donde esta el bombo",
+        name="Ridge width",
+        description="How much of the spectrum it covers. At 1 it is a straight ridge from side to side, which looks like a step; lowering it concentrates on the lows and leaves a swell born where the kick is",
         default=0.35, min=0.02, max=1.0, update=_al_cambiar_paisaje,
     )
     compas_marca: FloatProperty(
-        name="Marca de compas",
-        description="Una muesca en el PRIMER tiempo de cada compas, pegada a una orilla. "
-                    "Con la cresta sola todos los tiempos son iguales y no se ve donde "
-                    "empieza cada compas; esto deja un carril que hace de regla",
+        name="Bar marker",
+        description="A notch on the FIRST beat of every bar, hugging one edge. With the ridge alone every beat looks the same and you cannot see where each bar starts; this leaves a lane that acts as a ruler",
         default=0.0, min=0.0, max=1.0, update=_al_cambiar_paisaje,
     )
     compas_marca_lado: EnumProperty(
-        name="En el lado de",
-        description="En que orilla va la marca. Por defecto en los agudos, porque la "
-                    "cresta del pulso se concentra en los graves y se taparian",
-        items=(('AGUDOS', "Los agudos", "Al borde de las frecuencias altas"),
-               ('GRAVES', "Los graves", "Al borde de las frecuencias bajas")),
+        name="On the side of",
+        description="Which edge the marker goes on. By default the highs, because the beat ridge concentrates on the lows and they would cover each other",
+        items=(('AGUDOS', "The highs", "At the edge of the high frequencies"),
+               ('GRAVES', "The lows", "At the edge of the low frequencies")),
         default='AGUDOS', update=_al_cambiar_paisaje,
     )
     compas_marca_ancho: FloatProperty(
-        name="Ancho de la marca",
-        description="Cuanto se mete hacia dentro desde la orilla",
+        name="Marker width",
+        description="How far in it reaches from the edge",
         default=0.15, min=0.02, max=1.0, update=_al_cambiar_paisaje,
     )
 
-    modo: EnumProperty(name="Aspecto", items=MODOS_PAISAJE, default='AMBOS',
+    modo: EnumProperty(name="Look", items=MODOS_PAISAJE, default='AMBOS',
                        update=_al_cambiar_estilo_paisaje)
     grosor_malla: FloatProperty(
-        name="Grosor de los hilos",
-        description="En fracciones de celda: 0.5 seria una celda entera pintada",
+        name="Wire thickness",
+        description="In fractions of a cell: 0.5 would be a whole cell painted",
         default=0.08, min=0.001, max=0.5, precision=3,
         update=_al_cambiar_estilo_paisaje,
     )
     opacidad_superficie: FloatProperty(
-        name="Opacidad de la superficie",
-        description="Con 'Solido + malla', cuanto se ve la superficie entre los hilos",
+        name="Surface opacity",
+        description="With 'Solid + wireframe', how visible the surface is between the wires",
         default=0.3, min=0.0, max=1.0, update=_al_cambiar_estilo_paisaje,
     )
 
-    color_bajo: FloatVectorProperty(name="Valles", subtype='COLOR', size=3,
+    color_bajo: FloatVectorProperty(name="Valleys", subtype='COLOR', size=3,
                                     default=(0.02, 0.1, 0.4), min=0.0, max=1.0,
                                     update=_al_cambiar_color_paisaje)
-    color_alto: FloatVectorProperty(name="Cumbres", subtype='COLOR', size=3,
+    color_alto: FloatVectorProperty(name="Peaks", subtype='COLOR', size=3,
                                     default=(1.0, 0.35, 0.75), min=0.0, max=1.0,
                                     update=_al_cambiar_color_paisaje)
-    brillo: FloatProperty(name="Brillo", default=2.0, min=0.0, soft_max=20.0,
+    brillo: FloatProperty(name="Brightness", default=2.0, min=0.0, soft_max=20.0,
                           update=_al_cambiar_color_paisaje)
     desvanecer: BoolProperty(
-        name="Desvanecer el horizonte",
-        description="Difumina el fondo del paisaje. Sin esto, el relieve se corta en seco "
-                    "con una linea recta que delata que aquello es una rejilla",
+        name="Fade the horizon",
+        description="Fades out the back of the landscape. Without it the relief stops dead in a straight line that gives away that it is a grid",
         default=True, update=_al_cambiar_color_paisaje,
     )
     desvanecido: FloatProperty(
-        name="Cuanto se desvanece",
-        description="Que parte del fondo se difumina, de 0 a 1",
+        name="How much it fades",
+        description="How much of the back fades out, from 0 to 1",
         default=0.4, min=0.0, max=1.0, update=_al_cambiar_color_paisaje,
     )
 
@@ -4164,176 +4113,152 @@ class AV_EnjambreAjustes(PropertyGroup):
 
     fuente: PointerProperty(
         name="Audio",
-        description="Que fuente de audio mueve este enjambre",
+        description="Which audio source drives this swarm",
         type=bpy.types.Object, poll=_poll_fuente, update=_al_cambiar_enjambre,
     )
 
     particulas: IntProperty(
-        name="Particulas",
-        description="Cuantas hay. Unas miles se distinguen de una en una; a partir "
-                    "de decenas de miles se lee como polvo, y el visor va mas lento",
+        name="Particles",
+        description="How many there are. A few thousand read as individual particles; from tens of thousands on it reads as dust, and the viewport slows down",
         default=5000, min=8, soft_max=20000, max=200000, update=_al_cambiar_enjambre,
     )
-    forma: EnumProperty(name="Forma", items=FORMAS_ENJAMBRE, default='DISCO',
+    forma: EnumProperty(name="Shape", items=FORMAS_ENJAMBRE, default='DISCO',
                         update=_al_cambiar_enjambre)
-    reparto: EnumProperty(name="Bandas", items=REPARTOS_ENJAMBRE, default='RADIO',
+    reparto: EnumProperty(name="Bands", items=REPARTOS_ENJAMBRE, default='RADIO',
                           update=_al_cambiar_enjambre)
-    radio: FloatProperty(name="Radio", default=5.0, min=0.01, soft_max=40.0,
+    radio: FloatProperty(name="Radius", default=5.0, min=0.01, soft_max=40.0,
                          unit='LENGTH', update=_al_cambiar_enjambre)
     grosor: FloatProperty(
-        name="Grosor",
-        description="Lo que se sale la nube de su plano. A 0 queda un disco "
-                    "perfectamente plano; subiendolo engorda hacia una lenteja",
+        name="Thickness",
+        description="How far the cloud leaves its plane. At 0 you get a perfectly flat disc; raising it fattens into a lens",
         default=0.15, min=0.0, soft_max=2.0, update=_al_cambiar_enjambre,
     )
-    semilla: IntProperty(name="Semilla", default=0, min=0, max=9999,
+    semilla: IntProperty(name="Seed", default=0, min=0, max=9999,
                          update=_al_cambiar_enjambre)
 
     giro: FloatProperty(
-        name="Giro",
-        description="Vueltas por segundo. En negativo gira al reves",
+        name="Spin",
+        description="Turns per second. Negative spins the other way",
         default=0.05, min=-5.0, max=5.0, update=_al_cambiar_enjambre,
     )
     diferencial: FloatProperty(
-        name="Giro diferencial",
-        description="Cuanto mas rapido van las de dentro que las de fuera. A 0 la "
-                    "nube gira como un solido, que se lee como algo rigido; subido "
-                    "se enrosca sola y parece una galaxia",
+        name="Differential spin",
+        description="How much faster the inner ones go than the outer ones. At 0 the cloud spins like a solid, which reads as rigid; raised, it coils by itself and looks like a galaxy",
         default=1.0, min=0.0, soft_max=6.0, update=_al_cambiar_enjambre,
     )
     empuje: FloatProperty(
-        name="Empuje directo",
-        description="Coloca la particula segun lo que suena AHORA: si el audio "
-                    "pega un salto, ella pega el salto. Es el mas directo de "
-                    "leer, pero con musica movida tiembla",
+        name="Direct push",
+        description="Places the particle according to what sounds NOW: if the audio jumps, it jumps. The easiest to read, but with busy music it jitters",
         default=1.2, min=0.0, soft_max=20.0, unit='LENGTH',
         update=_al_cambiar_enjambre,
     )
     fuerza: FloatProperty(
-        name="Fuerza con inercia",
-        description="Trata cada golpe como un empujon sobre algo que pesa: sale "
-                    "despacio y vuelve solo. Mucho mas sutil. Es lo que se "
-                    "desplaza una particula con su banda sonando a tope y "
-                    "sostenida. Se puede mezclar con el empuje directo, o "
-                    "usarlo solo bajando aquel a cero",
+        name="Force with inertia",
+        description="Treats every hit as a shove on something with weight: it eases out and returns by itself. Far subtler. This is how far a particle travels with its band at full and sustained. You can mix it with the direct push, or use it alone by dropping that to zero",
         default=0.0, min=0.0, soft_max=20.0, unit='LENGTH',
         update=_al_cambiar_enjambre,
     )
     vuelta: FloatProperty(
-        name="Tiempo de vuelta",
-        description="Lo que tarda en regresar tras un empujon. Corto = nervioso "
-                    "y pegado al ritmo; largo = pesado, las particulas siguen "
-                    "moviendose cuando el golpe ya paso",
+        name="Return time",
+        description="How long it takes to come back after a shove. Short = nervous and tight to the beat; long = heavy, the particles keep moving after the hit has passed",
         default=0.6, min=0.02, soft_max=5.0, subtype='TIME_ABSOLUTE', unit='TIME',
         update=_al_cambiar_enjambre,
     )
     rebote: FloatProperty(
-        name="Rebote",
-        description="A 0 vuelve sin pasarse, como con el freno puesto. Subiendolo "
-                    "se pasa de largo y oscila unas cuantas veces, como un muelle",
+        name="Bounce",
+        description="At 0 it returns without overshooting, as if braked. Raising it overshoots and oscillates a few times, like a spring",
         default=0.35, min=0.0, max=1.0, update=_al_cambiar_enjambre,
     )
 
     peso_graves: FloatProperty(
-        name="Graves",
-        description="Cuanto mandan los graves sobre el movimiento Y sobre el brillo. "
-                    "A 0 las particulas graves ni se mueven ni se encienden",
+        name="Lows",
+        description="How much the lows rule the movement AND the brightness. At 0 the low particles neither move nor light up",
         default=1.0, min=0.0, soft_max=3.0, update=_al_cambiar_enjambre,
     )
     peso_medios: FloatProperty(
-        name="Medios", description="Lo mismo para la zona central del espectro",
+        name="Mids", description="The same for the middle of the spectrum",
         default=1.0, min=0.0, soft_max=3.0, update=_al_cambiar_enjambre,
     )
     peso_agudos: FloatProperty(
-        name="Agudos", description="Lo mismo para los agudos",
+        name="Highs", description="The same for the highs",
         default=1.0, min=0.0, soft_max=3.0, update=_al_cambiar_enjambre,
     )
 
     turbulencia: FloatProperty(
-        name="Turbulencia",
-        description="Una corriente de remolinos que arrastra la nube. Quita el aire "
-                    "de rejilla perfecta",
+        name="Turbulence",
+        description="A current of swirls that drags the cloud along. It removes the perfect-grid feel",
         default=0.0, min=0.0, soft_max=10.0, unit='LENGTH',
         update=_al_cambiar_enjambre,
     )
     turb_audio: FloatProperty(
-        name="La agita el audio",
-        description="A 0 la corriente sopla siempre igual. Subiendolo, solo se "
-                    "agitan las particulas cuya banda esta sonando: en los golpes "
-                    "fuertes hierve y en los silencios se queda quieta. A 1 la "
-                    "turbulencia depende por completo de la musica",
+        name="Stirred by the audio",
+        description="At 0 the current blows the same all the time. Raising it, only the particles whose band is sounding get stirred: it boils on the loud hits and goes still in the silences. At 1 the turbulence depends entirely on the music",
         default=0.0, min=0.0, max=1.0, update=_al_cambiar_enjambre,
     )
     turb_escala: FloatProperty(
-        name="Tamano del remolino",
-        description="Grande = zonas enteras de la nube se mueven juntas, como una "
-                    "corriente. Pequeno = cada particula por su lado, y vuelve el "
-                    "temblor",
+        name="Swirl size",
+        description="Large = whole areas of the cloud move together, like a current. Small = every particle on its own, and the jitter comes back",
         default=3.0, min=0.05, soft_max=30.0, unit='LENGTH',
         update=_al_cambiar_enjambre,
     )
     turb_velocidad: FloatProperty(
-        name="Velocidad del remolino",
-        description="Lo rapido que cambia la corriente. Bajo se percibe como algo "
-                    "vivo pero tranquilo",
+        name="Swirl speed",
+        description="How fast the current changes. Low reads as alive but calm",
         default=0.3, min=0.0, soft_max=5.0, update=_al_cambiar_enjambre,
     )
 
     pulso_onda: FloatProperty(
-        name="Onda por pulso",
-        description="Un anillo que sale del centro en cada golpe. Ademas de empujar, "
-                    "enciende las particulas por donde pasa. Necesita el compas detectado",
+        name="Wave per beat",
+        description="A ring leaving the centre on every hit. As well as pushing, it lights the particles it passes. Needs the beat detected",
         default=0.0, min=0.0, soft_max=10.0, unit='LENGTH', update=_al_cambiar_enjambre,
     )
-    onda_grosor: FloatProperty(name="Grosor", default=0.18, min=0.01, max=1.0,
+    onda_grosor: FloatProperty(name="Thickness", default=0.18, min=0.01, max=1.0,
                                update=_al_cambiar_enjambre)
     compas_onda: FloatProperty(
-        name="Onda por compas",
-        description="La segunda capa, mas lenta: tarda un compas entero en cruzar",
+        name="Wave per bar",
+        description="The second layer, slower: it takes a whole bar to cross",
         default=0.0, min=0.0, soft_max=10.0, unit='LENGTH', update=_al_cambiar_enjambre,
     )
-    compas_onda_grosor: FloatProperty(name="Grosor", default=0.30, min=0.01, max=1.0,
+    compas_onda_grosor: FloatProperty(name="Thickness", default=0.30, min=0.01, max=1.0,
                                       update=_al_cambiar_enjambre)
 
-    canal: EnumProperty(name="Canal", items=CANALES, default='MONO',
+    canal: EnumProperty(name="Channel", items=CANALES, default='MONO',
                         update=_al_cambiar_enjambre)
-    suave: BoolProperty(name="Interpolar entre bandas", default=True,
+    suave: BoolProperty(name="Interpolate between bands", default=True,
                         update=_al_cambiar_enjambre)
-    banda_min: IntProperty(name="Banda desde", default=0, min=0, max=31,
+    banda_min: IntProperty(name="Band from", default=0, min=0, max=31,
                            update=_al_cambiar_enjambre)
-    banda_max: IntProperty(name="Banda hasta", default=7, min=0, max=31,
+    banda_max: IntProperty(name="Band to", default=7, min=0, max=31,
                            update=_al_cambiar_enjambre)
 
-    tam_punto: FloatProperty(name="Tamano", default=0.03, min=0.0001, soft_max=0.5,
+    tam_punto: FloatProperty(name="Size", default=0.03, min=0.0001, soft_max=0.5,
                              precision=4, unit='LENGTH',
                              update=_al_cambiar_estilo_enjambre)
     reaccion_tam: FloatProperty(
-        name="Crecer al sonar",
-        description="Cuanto engorda una particula cuando su banda suena. A 0 todas "
-                    "miden igual y solo cambia el brillo",
+        name="Grow when sounding",
+        description="How much a particle swells when its band sounds. At 0 they are all the same size and only the brightness changes",
         default=2.0, min=0.0, soft_max=10.0, update=_al_cambiar_estilo_enjambre,
     )
 
-    color_grave: FloatVectorProperty(name="Graves", subtype='COLOR', size=3,
+    color_grave: FloatVectorProperty(name="Lows", subtype='COLOR', size=3,
                                      default=(0.0, 0.45, 1.0), min=0.0, max=1.0,
                                      update=_al_cambiar_color_enjambre)
-    color_medio: FloatVectorProperty(name="Medios", subtype='COLOR', size=3,
+    color_medio: FloatVectorProperty(name="Mids", subtype='COLOR', size=3,
                                      default=(0.1, 1.0, 0.9), min=0.0, max=1.0,
                                      update=_al_cambiar_color_enjambre)
-    color_agudo: FloatVectorProperty(name="Agudos", subtype='COLOR', size=3,
+    color_agudo: FloatVectorProperty(name="Highs", subtype='COLOR', size=3,
                                      default=(1.0, 0.15, 0.6), min=0.0, max=1.0,
                                      update=_al_cambiar_color_enjambre)
-    brillo: FloatProperty(name="Brillo", default=2.5, min=0.0, soft_max=20.0,
+    brillo: FloatProperty(name="Brightness", default=2.5, min=0.0, soft_max=20.0,
                           update=_al_cambiar_color_enjambre)
     fondo: FloatProperty(
-        name="Suelo de brillo",
-        description="Lo que iluminan las particulas calladas. A 0 desaparecen y "
-                    "solo se ve lo que suena; subido se ve siempre la nube entera",
+        name="Brightness floor",
+        description="How much the quiet particles glow. At 0 they disappear and you only see what sounds; raised, the whole cloud is always visible",
         default=0.08, min=0.0, max=1.0, update=_al_cambiar_color_enjambre,
     )
     destello: FloatProperty(
-        name="Destello de la onda",
-        description="Cuanto encienden las ondas al pasar, aparte de empujar",
+        name="Wave flash",
+        description="How much the waves light things up as they pass, on top of pushing",
         default=1.0, min=0.0, soft_max=10.0, update=_al_cambiar_color_enjambre,
     )
 
@@ -4346,156 +4271,136 @@ class AV_PlexusAjustes(PropertyGroup):
 
     fuente: PointerProperty(
         name="Audio",
-        description="Que fuente de audio mueve este plexus. Si tienes varias cargadas, "
-                    "cada plexus puede escuchar una distinta",
+        description="Which audio source drives this plexus. If you have several loaded, each plexus can listen to a different one",
         type=bpy.types.Object, poll=_poll_fuente, update=_al_cambiar_plexus,
     )
 
-    forma: EnumProperty(name="Forma", items=FORMAS, default='ESFERA',
+    forma: EnumProperty(name="Shape", items=FORMAS, default='ESFERA',
                         update=_al_cambiar_origen)
     objeto_origen: PointerProperty(
-        name="Modelo",
-        description="El objeto de la escena del que se sacan los puntos. Se lee con sus "
-                    "modificadores aplicados, asi que puedes usar Subdivision, Remesh...",
+        name="Model",
+        description="The scene object the points are taken from. It is read with its modifiers applied, so you can use Subdivision, Remesh...",
         type=bpy.types.Object, poll=_poll_modelo, update=_al_cambiar_origen,
     )
     puntos: IntProperty(
-        name="Puntos",
-        description="Densidad de la nube. Por encima de ~1200 la reconstruccion por "
-                    "fotograma empieza a notarse al reproducir",
+        name="Points",
+        description="Density of the cloud. Above about 1200 the per-frame rebuild starts to show during playback",
         default=250, min=4, soft_max=1200, max=4000, update=_al_cambiar_plexus,
     )
-    radio: FloatProperty(name="Radio", default=4.0, min=0.01, soft_max=30.0,
+    radio: FloatProperty(name="Radius", default=4.0, min=0.01, soft_max=30.0,
                          unit='LENGTH', update=_al_cambiar_plexus)
-    semilla: IntProperty(name="Semilla", description="Cambiala para obtener otro reparto",
+    semilla: IntProperty(name="Seed", description="Change it to get a different scatter",
                          default=0, min=0, max=9999, update=_al_cambiar_plexus)
     amplitud: FloatProperty(
-        name="Amplitud",
-        description="Cuanto se desplaza un punto cuando su banda vale 1.0",
+        name="Amplitude",
+        description="How far a point travels when its band reads 1.0",
         default=1.5, min=0.0, soft_max=20.0, unit='LENGTH', update=_al_cambiar_plexus,
     )
     pulso_amplitud: FloatProperty(
-        name="Golpe (toda la nube)",
-        description="En cada pulso la nube entera pega un empujon hacia fuera. Es un "
-                    "latido uniforme: se nota, pero parece mas que el objeto engorda "
-                    "que un ritmo. Necesita el compas detectado",
+        name="Kick (whole cloud)",
+        description="On every beat the whole cloud shoves outwards. It is a uniform pulse: you notice it, but it looks more like the object swelling than like rhythm. Needs the beat detected",
         default=0.0, min=0.0, soft_max=10.0, unit='LENGTH', update=_al_cambiar_plexus,
     )
     pulso_onda: FloatProperty(
-        name="Onda por pulso",
-        description="Un anillo que sale del centro en cada golpe y llega al borde justo "
-                    "cuando entra el siguiente. Se lee como ritmo mucho mejor que el "
-                    "latido uniforme. Necesita el compas detectado",
+        name="Wave per beat",
+        description="A ring that leaves the centre on every hit and reaches the rim just as the next one arrives. It reads as rhythm far better than the uniform pulse. Needs the beat detected",
         default=0.0, min=0.0, soft_max=10.0, unit='LENGTH', update=_al_cambiar_plexus,
     )
     onda_grosor: FloatProperty(
-        name="Grosor",
-        description="Estrecho = un latigazo que recorre la nube; ancho = una marea",
+        name="Thickness",
+        description="Narrow = a whip crack running through the cloud; wide = a tide",
         default=0.18, min=0.01, max=1.0, update=_al_cambiar_plexus,
     )
     compas_onda: FloatProperty(
-        name="Onda por compas",
-        description="Otro anillo, pero este tarda un compas entero en cruzar. Puesto a la "
-                    "vez que el del pulso da dos capas de ritmo: una rapida y una de "
-                    "fondo que marca donde empieza cada compas",
+        name="Wave per bar",
+        description="Another ring, but this one takes a whole bar to cross. Used together with the beat ring it gives two layers of rhythm: a fast one and a background one marking where each bar starts",
         default=0.0, min=0.0, soft_max=10.0, unit='LENGTH', update=_al_cambiar_plexus,
     )
     compas_onda_grosor: FloatProperty(
-        name="Grosor",
-        description="Suele quedar mejor mas ancho que el del pulso: al ir tan despacio, "
-                    "un anillo fino se queda en un hilo que apenas se ve moverse",
+        name="Thickness",
+        description="It usually looks better wider than the beat one: moving so slowly, a thin ring is left as a thread you can barely see move",
         default=0.30, min=0.01, max=1.0, update=_al_cambiar_plexus,
     )
     canal: EnumProperty(
-        name="Canal", items=CANALES, default='MONO',
-        description="En estereo, la mitad izquierda de la nube sigue al canal izquierdo "
-                    "y la derecha al derecho, fundiendose por el centro",
+        name="Channel", items=CANALES, default='MONO',
+        description="In stereo, the left half of the cloud follows the left channel and the right half the right one, blending through the centre",
         update=_al_cambiar_plexus,
     )
-    asignacion: EnumProperty(name="Bandas por", items=ASIGNACIONES, default='VERTICAL',
+    asignacion: EnumProperty(name="Bands by", items=ASIGNACIONES, default='VERTICAL',
                              update=_al_cambiar_plexus)
     suave: BoolProperty(
-        name="Interpolar entre bandas",
-        description="Cada punto mezcla las dos bandas mas cercanas y la superficie queda "
-                    "continua. Desactivalo para que se formen mesetas y escalones, como "
-                    "un ecualizador clasico",
+        name="Interpolate between bands",
+        description="Each point blends the two nearest bands and the surface stays continuous. Turn it off to get plateaus and steps, like a classic equalizer",
         default=True, update=_al_cambiar_plexus,
     )
-    banda_min: IntProperty(name="Banda desde", default=0, min=0, max=31,
+    banda_min: IntProperty(name="Band from", default=0, min=0, max=31,
                            update=_al_cambiar_plexus)
-    banda_max: IntProperty(name="Banda hasta", default=7, min=0, max=31,
+    banda_max: IntProperty(name="Band to", default=7, min=0, max=31,
                            update=_al_cambiar_plexus)
     distancia: FloatProperty(
-        name="Distancia de union",
-        description="Dos puntos se unen si estan mas cerca que esto. Es el control que "
-                    "mas cambia el aspecto: bajo = puntos sueltos, alto = maraña",
+        name="Link distance",
+        description="Two points link if they are closer than this. It is the control that changes the look the most: low = loose points, high = a tangle",
         default=1.6, min=0.0, soft_max=20.0, unit='LENGTH', update=_al_cambiar_plexus,
     )
     conexiones: IntProperty(
-        name="Conexiones por punto",
-        description="Tope de vecinos a los que se une cada punto, para que las zonas "
-                    "densas no se conviertan en una mancha",
+        name="Links per point",
+        description="Cap on how many neighbours each point links to, so dense areas do not turn into a blob",
         default=4, min=1, max=32, update=_al_cambiar_plexus,
     )
-    grosor: FloatProperty(name="Grosor de linea", default=0.012, min=0.0001,
+    grosor: FloatProperty(name="Line thickness", default=0.012, min=0.0001,
                           soft_max=0.2, precision=4, unit='LENGTH',
                           update=_al_cambiar_estilo_plexus)
-    tam_punto: FloatProperty(name="Tamano del punto", default=0.05, min=0.0001,
+    tam_punto: FloatProperty(name="Point size", default=0.05, min=0.0001,
                              soft_max=0.5, precision=4, unit='LENGTH',
                              update=_al_cambiar_estilo_plexus)
 
-    color_grave: FloatVectorProperty(name="Graves", subtype='COLOR', size=3,
+    color_grave: FloatVectorProperty(name="Lows", subtype='COLOR', size=3,
                                      default=(0.0, 0.45, 1.0), min=0.0, max=1.0,
                                      update=_al_cambiar_color_plexus)
-    color_medio: FloatVectorProperty(name="Medios", subtype='COLOR', size=3,
+    color_medio: FloatVectorProperty(name="Mids", subtype='COLOR', size=3,
                                      default=(0.1, 1.0, 0.9), min=0.0, max=1.0,
                                      update=_al_cambiar_color_plexus)
-    color_agudo: FloatVectorProperty(name="Agudos", subtype='COLOR', size=3,
+    color_agudo: FloatVectorProperty(name="Highs", subtype='COLOR', size=3,
                                      default=(1.0, 0.15, 0.6), min=0.0, max=1.0,
                                      update=_al_cambiar_color_plexus)
-    brillo: FloatProperty(name="Brillo", default=2.5, min=0.0, soft_max=20.0,
+    brillo: FloatProperty(name="Brightness", default=2.5, min=0.0, soft_max=20.0,
                           update=_al_cambiar_color_plexus)
 
     # ---- caras, en un objeto aparte ----
     caras: BoolProperty(
-        name="Generar caras",
-        description="Rellena con triangulos los huecos donde tres puntos estan unidos "
-                    "entre si. Van a un objeto separado, hijo de este, para que puedas "
-                    "darles su propio material sin tocar el de las lineas",
+        name="Generate faces",
+        description="Fills with triangles the gaps where three points are linked to each other. They go to a separate object, a child of this one, so you can give them their own material without touching the one on the lines",
         default=False, update=_al_cambiar_caras,
     )
     objeto_caras: PointerProperty(type=bpy.types.Object)
     ratio_caras: FloatProperty(
-        name="Ratio de aparicion",
-        description="Que fraccion de los triangulos posibles se rellena. 1 = todos "
-                    "(membrana cerrada), 0.3 = parches sueltos. El sorteo es estable: "
-                    "un triangulo concreto sale o no sale siempre igual, no parpadea",
+        name="Appearance ratio",
+        description="What fraction of the possible triangles gets filled. 1 = all of them (a closed membrane), 0.3 = loose patches. The draw is stable: a given triangle either appears or not, always the same, it does not flicker",
         default=1.0, min=0.0, max=1.0, update=_al_cambiar_plexus,
     )
-    color_caras: FloatVectorProperty(name="En silencio", subtype='COLOR', size=3,
+    color_caras: FloatVectorProperty(name="When silent", subtype='COLOR', size=3,
                                      default=(0.05, 0.25, 0.7), min=0.0, max=1.0,
                                      update=_al_cambiar_color_caras)
     degradado_caras: BoolProperty(
-        name="Colorear por intensidad",
-        description="La cara toma color segun lo que suenen sus vertices, interpolado. "
-                    "Apagado, queda de un color plano",
+        name="Colour by intensity",
+        description="The face takes its colour from what its vertices sound like, interpolated. Off, it stays a flat colour",
         default=True, update=_al_cambiar_color_caras,
     )
-    color_caras_alta: FloatVectorProperty(name="A tope", subtype='COLOR', size=3,
+    color_caras_alta: FloatVectorProperty(name="At full", subtype='COLOR', size=3,
                                           default=(0.4, 0.95, 1.0), min=0.0, max=1.0,
                                           update=_al_cambiar_color_caras)
     atributo_caras: EnumProperty(
-        name="Segun",
-        description="Que atributo alimenta el degradado de las caras",
+        name="Driven by",
+        description="Which attribute feeds the gradient on the faces",
         items=(
-            ('av_intensidad', "Intensidad", "Cuanto suena la banda de cada vertice ahora mismo"),
-            ('av_nivel', "Banda", "Donde esta cada vertice en el espectro: grave o agudo"),
+            ('av_intensidad', "Intensity", "How loud each vertex's band is right now"),
+            ('av_nivel', "Band", "Where each vertex sits in the spectrum: low or high"),
         ),
         default='av_intensidad', update=_al_cambiar_color_caras,
     )
-    opacidad_caras: FloatProperty(name="Opacidad", default=0.18, min=0.0, max=1.0,
+    opacidad_caras: FloatProperty(name="Opacity", default=0.18, min=0.0, max=1.0,
                                   update=_al_cambiar_color_caras)
-    brillo_caras: FloatProperty(name="Brillo de las caras", default=1.0, min=0.0,
+    brillo_caras: FloatProperty(name="Face brightness", default=1.0, min=0.0,
                                 soft_max=20.0, update=_al_cambiar_color_caras)
 
 
@@ -4562,10 +4467,8 @@ def ajustar_rango_escena(escena, fotogramas, fps):
 
 class AV_OT_analizar_audio(Operator):
     bl_idname = "audioviz.analizar_audio"
-    bl_label = "Analizar un audio"
-    bl_description = ("Abre un archivo de audio, lo analiza aqui mismo y crea la fuente. "
-                      "No necesita ningun programa de fuera: usa el decodificador y el "
-                      "ffmpeg que Blender ya trae")
+    bl_label = "Analyze audio"
+    bl_description = ("Opens an audio file, analyzes it right here and creates the source. Needs no outside program: it uses the audio decoder and the ffmpeg Blender already ships")
     bl_options = {'REGISTER', 'UNDO'}
 
     filepath: StringProperty(subtype='FILE_PATH')
@@ -4579,14 +4482,14 @@ class AV_OT_analizar_audio(Operator):
 
     def execute(self, contexto):
         if np is None:
-            self.report({'ERROR'}, "Hace falta numpy y no esta disponible")
+            self.report({'ERROR'}, "numpy is required and not available")
             return {'CANCELLED'}
         escena = contexto.scene
         aj = escena.audioviz
 
         ruta = bpy.path.abspath(self.filepath)
         if not ruta or not os.path.isfile(ruta):
-            self.report({'ERROR'}, "Elige un archivo de audio")
+            self.report({'ERROR'}, "Choose an audio file")
             return {'CANCELLED'}
 
         wm = contexto.window_manager
@@ -4599,14 +4502,14 @@ class AV_OT_analizar_audio(Operator):
                 return {'CANCELLED'}
 
             if len(x) < 64:
-                self.report({'ERROR'}, "El archivo es demasiado corto")
+                self.report({'ERROR'}, "The file is too short")
                 return {'CANCELLED'}
 
             # El limite de Nyquist manda: por encima de la mitad de la frecuencia
             # de muestreo no hay informacion que analizar.
             f_max = min(aj.fmax, frec / 2.0 * 0.98)
             if f_max <= aj.fmin:
-                self.report({'ERROR'}, "'Agudos hasta' tiene que ser mayor que 'Graves desde'")
+                self.report({'ERROR'}, "'Highs up to' must be greater than 'Lows from'")
                 return {'CANCELLED'}
 
             estereo = izq is not None and aj.analizar_estereo
@@ -4645,7 +4548,7 @@ class AV_OT_analizar_audio(Operator):
         if self.reemplazar:
             empty = fuente_activa(escena)
             if empty is None:
-                self.report({'ERROR'}, "No hay ninguna fuente activa que reemplazar")
+                self.report({'ERROR'}, "There is no active source to replace")
                 return {'CANCELLED'}
         else:
             empty = bpy.data.objects.new(f"{PREFIJO_FUENTE}_{nombre_corto}", None)
@@ -4711,16 +4614,14 @@ class AV_OT_analizar_audio(Operator):
 
 class AV_OT_ver_analisis(Operator):
     bl_idname = "audioviz.ver_analisis"
-    bl_label = "Ver el analisis"
-    bl_description = ("Dibuja el tema entero como espectrograma: el tiempo a lo ancho, "
-                      "las bandas de grave a agudo, y los pulsos del compas encima. "
-                      "Refleja el suavizado, asi que sirve para ajustarlo mirando")
+    bl_label = "Show analysis"
+    bl_description = ("Draws the whole track as a spectrogram: time across, bands from low to high, and the beats on top. It reflects the smoothing, so you can tune it by eye")
     bl_options = {'REGISTER'}
 
     def execute(self, contexto):
         fuente = fuente_activa(contexto.scene)
         if fuente is None:
-            self.report({'ERROR'}, "Carga primero un audio")
+            self.report({'ERROR'}, "Load an audio file first")
             return {'CANCELLED'}
 
         aj = contexto.scene.audioviz
@@ -4752,8 +4653,8 @@ class AV_OT_ver_analisis(Operator):
 
 class AV_OT_quitar_analisis(Operator):
     bl_idname = "audioviz.quitar_analisis"
-    bl_label = "Quitar la vista"
-    bl_description = "Borra la imagen del analisis"
+    bl_label = "Remove view"
+    bl_description = "Deletes the analysis image"
     bl_options = {'REGISTER'}
 
     def execute(self, contexto):
@@ -4770,8 +4671,8 @@ class AV_OT_quitar_analisis(Operator):
 
 class AV_OT_tira_sonido(Operator):
     bl_idname = "audioviz.tira_sonido"
-    bl_label = "Audio en el secuenciador"
-    bl_description = "Mete o saca del Video Sequencer el audio de la fuente activa"
+    bl_label = "Audio in sequencer"
+    bl_description = "Adds or removes the active source's audio from the Video Sequencer"
     bl_options = {'REGISTER', 'UNDO'}
 
     quitar: BoolProperty(default=False)
@@ -4780,19 +4681,18 @@ class AV_OT_tira_sonido(Operator):
         escena = contexto.scene
         fuente = fuente_activa(escena)
         if fuente is None:
-            self.report({'ERROR'}, "No hay ninguna fuente activa")
+            self.report({'ERROR'}, "There is no active source")
             return {'CANCELLED'}
         aud = fuente.audioviz_audio
 
         if self.quitar:
             quitar_tira_sonido(escena, fuente)
-            self.report({'INFO'}, "Audio sacado del secuenciador")
+            self.report({'INFO'}, "Audio removed from the sequencer")
             return {'FINISHED'}
 
         ruta = bpy.path.abspath(aud.ruta_audio)
         if not ruta or not os.path.isfile(ruta):
-            self.report({'ERROR'}, "Esta fuente no sabe de que archivo viene "
-                                   "(pasa con las cargadas desde .json)")
+            self.report({'ERROR'}, "This source does not know which file it came from (happens with ones loaded from .json)")
             return {'CANCELLED'}
         marcos = fuente.get(CLAVE_FRAMES)
         inicio = int(marcos[0]) if marcos else escena.frame_start
@@ -4808,15 +4708,13 @@ class AV_OT_tira_sonido(Operator):
 
 class AV_OT_importar(Operator):
     bl_idname = "audioviz.importar"
-    bl_label = "Importar audio"
-    bl_description = ("Lee el JSON y crea una fuente de audio nueva. Puedes tener varias "
-                      "en la misma escena, cada una con su archivo")
+    bl_label = "Import audio"
+    bl_description = ("Reads the JSON and creates a new audio source. You can have several in one scene, each with its own file")
     bl_options = {'REGISTER', 'UNDO'}
 
     reemplazar: BoolProperty(
-        name="Reemplazar",
-        description="En vez de crear una fuente nueva, cambia el audio de la fuente activa "
-                    "conservando su nombre y todo lo que ya dependa de ella",
+        name="Replace",
+        description="Instead of creating a new source, swaps the active source's audio while keeping its name and everything that already depends on it",
         default=False,
     )
 
@@ -4825,7 +4723,7 @@ class AV_OT_importar(Operator):
         aj = escena.audioviz
 
         if not aj.ruta_json:
-            self.report({'ERROR'}, "Elige primero el archivo .json")
+            self.report({'ERROR'}, "Choose the .json file first")
             return {'CANCELLED'}
         ruta = bpy.path.abspath(aj.ruta_json)
         if not os.path.isfile(ruta):
@@ -4844,7 +4742,7 @@ class AV_OT_importar(Operator):
         if self.reemplazar:
             empty = fuente_activa(escena)
             if empty is None:
-                self.report({'ERROR'}, "No hay ninguna fuente activa que reemplazar")
+                self.report({'ERROR'}, "There is no active source to replace")
                 return {'CANCELLED'}
         else:
             # Una fuente nueva por cada audio. El nombre sale del archivo, que en
@@ -4881,19 +4779,18 @@ class AV_OT_importar(Operator):
 
 class AV_OT_reaplicar(Operator):
     bl_idname = "audioviz.reaplicar"
-    bl_label = "Aplicar suavizado"
-    bl_description = ("Recalcula la animacion desde los valores originales del JSON. "
-                      "Normalmente no hace falta: se aplica solo al mover los deslizadores")
+    bl_label = "Apply smoothing"
+    bl_description = ("Rebuilds the animation from the original values. You rarely need this: it happens by itself when you move the sliders")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
         empty = fuente_activa(contexto.scene)
         if empty is None:
-            self.report({'ERROR'}, "Importa primero un audio")
+            self.report({'ERROR'}, "Import an audio file first")
             return {'CANCELLED'}
         aud = empty.audioviz_audio
         if not aplicar_suavizado(empty, aud.ataque, aud.caida, aud.fps):
-            self.report({'ERROR'}, "Esta fuente no guarda los valores originales. Vuelve a importar el JSON")
+            self.report({'ERROR'}, "This source does not keep the original values. Import the JSON again")
             return {'CANCELLED'}
         self.report({'INFO'}, f"'{empty.name}': ataque {aud.ataque:.2f}s, caida {aud.caida:.2f}s")
         return {'FINISHED'}
@@ -4901,14 +4798,14 @@ class AV_OT_reaplicar(Operator):
 
 class AV_OT_quitar_suavizado(Operator):
     bl_idname = "audioviz.quitar_suavizado"
-    bl_label = "Sin suavizado"
-    bl_description = "Pone ataque y caida a 0 y devuelve la animacion a los valores originales"
+    bl_label = "No smoothing"
+    bl_description = "Sets attack and decay to 0 and returns the animation to the original values"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
         empty = fuente_activa(contexto.scene)
         if empty is None:
-            self.report({'ERROR'}, "Importa primero un audio")
+            self.report({'ERROR'}, "Import an audio file first")
             return {'CANCELLED'}
         empty.audioviz_audio.ataque = 0.0
         empty.audioviz_audio.caida = 0.0  # el update() ya recalcula la animacion
@@ -4970,15 +4867,14 @@ def detectar_compas_en(fuente, escena=None):
 
 class AV_OT_detectar_compas(Operator):
     bl_idname = "audioviz.detectar_compas"
-    bl_label = "Detectar compas"
-    bl_description = ("Vuelve a buscar el tempo. Se hace solo al cargar un audio; esto "
-                      "sirve para repetirlo despues de tocar las bandas que se miran")
+    bl_label = "Detect beat"
+    bl_description = ("Searches for the tempo again. It runs by itself when you load audio; this is for repeating it after changing which bands are looked at")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
         fuente = fuente_activa(contexto.scene)
         if fuente is None:
-            self.report({'ERROR'}, "Importa primero un audio")
+            self.report({'ERROR'}, "Import an audio file first")
             return {'CANCELLED'}
 
         bien, mensaje = detectar_compas_en(fuente, contexto.scene)
@@ -4991,8 +4887,8 @@ class AV_OT_detectar_compas(Operator):
 
 class AV_OT_quitar_compas(Operator):
     bl_idname = "audioviz.quitar_compas"
-    bl_label = "Quitar compas"
-    bl_description = "Borra las propiedades del compas, su animacion y los marcadores"
+    bl_label = "Remove beat"
+    bl_description = "Deletes the beat properties, their animation and the markers"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
@@ -5001,15 +4897,14 @@ class AV_OT_quitar_compas(Operator):
             return {'CANCELLED'}
         fuente.audioviz_audio.compas_activo = False
         quitar_compas(fuente, contexto.scene)
-        self.report({'INFO'}, "Compas eliminado")
+        self.report({'INFO'}, "Beat removed")
         return {'FINISHED'}
 
 
 class AV_OT_medio_tempo(Operator):
     bl_idname = "audioviz.medio_tempo"
     bl_label = "x0.5 / x2"
-    bl_description = ("Parte o dobla el tempo. Los detectores de ritmo confunden a veces "
-                      "un tema con el doble o la mitad de su tempo: esto lo arregla de un clic")
+    bl_description = ("Halves or doubles the tempo. Beat detectors sometimes read a track at twice or half its real tempo: this fixes it in one click")
     bl_options = {'REGISTER', 'UNDO'}
 
     factor: FloatProperty(default=2.0)
@@ -5030,15 +4925,15 @@ class AV_OT_medio_tempo(Operator):
 
 class AV_OT_crear_barras(Operator):
     bl_idname = "audioviz.crear_barras"
-    bl_label = "Crear barras"
-    bl_description = "Crea una fila de barras enganchadas a las bandas mediante drivers"
+    bl_label = "Create bars"
+    bl_description = "Creates a row of bars hooked to the bands through drivers"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
         aj = contexto.scene.audioviz
         empty = fuente_activa(contexto.scene)
         if empty is None:
-            self.report({'ERROR'}, "Importa primero un audio")
+            self.report({'ERROR'}, "Import an audio file first")
             return {'CANCELLED'}
 
         bandas = bandas_de(empty)
@@ -5097,15 +4992,15 @@ class AV_OT_crear_barras(Operator):
 
 class AV_OT_crear_led(Operator):
     bl_idname = "audioviz.crear_led"
-    bl_label = "Crear ecualizador de LEDs"
-    bl_description = "Columnas de cubos sueltos que se encienden de abajo arriba, de verde a rojo"
+    bl_label = "Create LED equalizer"
+    bl_description = "Columns of separate cubes that light up from the bottom, green to red"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
         aj = contexto.scene.audioviz
         empty = fuente_activa(contexto.scene)
         if empty is None:
-            self.report({'ERROR'}, "Importa primero un audio")
+            self.report({'ERROR'}, "Import an audio file first")
             return {'CANCELLED'}
 
         bandas = bandas_de(empty)
@@ -5155,18 +5050,17 @@ class AV_OT_crear_led(Operator):
 
 class AV_OT_crear_plexus(Operator):
     bl_idname = "audioviz.crear_plexus"
-    bl_label = "Crear plexus"
-    bl_description = ("Anade un plexus nuevo e independiente a la escena. Puedes tener "
-                      "todos los que quieras, cada uno con su propia configuracion")
+    bl_label = "Create plexus"
+    bl_description = ("Adds a new, independent plexus to the scene. You can have as many as you like, each with its own settings")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
         if np is None:
-            self.report({'ERROR'}, "Este preset necesita numpy y no esta disponible")
+            self.report({'ERROR'}, "This preset needs numpy and it is not available")
             return {'CANCELLED'}
         empty = fuente_activa(contexto.scene)
         if empty is None:
-            self.report({'ERROR'}, "Importa primero un audio")
+            self.report({'ERROR'}, "Import an audio file first")
             return {'CANCELLED'}
 
         col = obtener_coleccion(contexto.scene)
@@ -5207,18 +5101,17 @@ class AV_OT_crear_plexus(Operator):
 
 class AV_OT_crear_enjambre(Operator):
     bl_idname = "audioviz.crear_enjambre"
-    bl_label = "Crear enjambre"
-    bl_description = ("Nube de particulas girando alrededor de un centro. Cada banda "
-                      "empuja y enciende las suyas, y las ondas del compas la barren")
+    bl_label = "Create swarm"
+    bl_description = ("A cloud of particles orbiting a centre. Each band pushes and lights its own, and the beat waves sweep across it")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
         if np is None:
-            self.report({'ERROR'}, "Este preset necesita numpy y no esta disponible")
+            self.report({'ERROR'}, "This preset needs numpy and it is not available")
             return {'CANCELLED'}
         empty = fuente_activa(contexto.scene)
         if empty is None:
-            self.report({'ERROR'}, "Importa primero un audio")
+            self.report({'ERROR'}, "Import an audio file first")
             return {'CANCELLED'}
 
         col = obtener_coleccion(contexto.scene)
@@ -5258,9 +5151,8 @@ class AV_OT_crear_enjambre(Operator):
 
 class AV_OT_crear_pulso(Operator):
     bl_idname = "audioviz.crear_pulso"
-    bl_label = "Crear cubos del compas"
-    bl_description = ("Una fila de cubos, uno por tiempo del compas. En cada pulso crece "
-                      "y se enciende el que toca, asi se ve el ritmo y en que tiempo va")
+    bl_label = "Create beat cubes"
+    bl_description = ("A row of cubes, one per beat of the bar. On each beat the one that is due grows and lights up, so you can see the rhythm and where you are in the bar")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
@@ -5268,10 +5160,10 @@ class AV_OT_crear_pulso(Operator):
         aj = escena.audioviz
         fuente = fuente_activa(escena)
         if fuente is None:
-            self.report({'ERROR'}, "Carga primero un audio")
+            self.report({'ERROR'}, "Load an audio file first")
             return {'CANCELLED'}
         if not tiene_compas(fuente):
-            self.report({'ERROR'}, "Detecta primero el compas (seccion 3 del panel)")
+            self.report({'ERROR'}, "Detect the beat first (section 3 of the panel)")
             return {'CANCELLED'}
 
         col = obtener_coleccion(escena)
@@ -5306,19 +5198,18 @@ class AV_OT_crear_pulso(Operator):
 
 class AV_OT_crear_paisaje(Operator):
     bl_idname = "audioviz.crear_paisaje"
-    bl_label = "Crear paisaje"
-    bl_description = ("Rejilla de montanas que avanza: a lo ancho las frecuencias, a lo "
-                      "largo el tiempo. Cada fila es un instante del pasado")
+    bl_label = "Create landscape"
+    bl_description = ("A grid of mountains that travels: frequencies across, time along. Each row is a moment of the past")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
         if np is None:
-            self.report({'ERROR'}, "Hace falta numpy y no esta disponible")
+            self.report({'ERROR'}, "numpy is required and not available")
             return {'CANCELLED'}
         escena = contexto.scene
         fuente = fuente_activa(escena)
         if fuente is None:
-            self.report({'ERROR'}, "Carga primero un audio")
+            self.report({'ERROR'}, "Load an audio file first")
             return {'CANCELLED'}
 
         col = obtener_coleccion(escena)
@@ -5352,15 +5243,13 @@ class AV_OT_crear_paisaje(Operator):
 
 class AV_OT_hornear(Operator):
     bl_idname = "audioviz.hornear"
-    bl_label = "Hornear"
-    bl_description = ("Deja una copia con la animacion metida en claves de forma, que "
-                      "funciona sin la extension: para mandar el .blend a una granja de "
-                      "render o a alguien que no la tenga. El original no se toca")
+    bl_label = "Bake"
+    bl_description = ("Leaves a copy with the animation baked into shape keys, which works without the extension: for sending the .blend to a render farm or to someone who does not have it. The original is left alone")
     bl_options = {'REGISTER', 'UNDO'}
 
     todo_el_rango: BoolProperty(
-        name="Todo el rango de la escena",
-        description="Desmarcado, hornea solo desde el fotograma actual hasta el final",
+        name="Whole scene range",
+        description="Unchecked, it bakes only from the current frame to the end",
         default=True,
     )
 
@@ -5368,13 +5257,13 @@ class AV_OT_hornear(Operator):
         escena = contexto.scene
         ob = contexto.object
         if not (es_plexus(ob) or es_paisaje(ob) or es_enjambre(ob)):
-            self.report({'ERROR'}, "Selecciona un plexus, un paisaje o un enjambre")
+            self.report({'ERROR'}, "Select a plexus, a landscape or a swarm")
             return {'CANCELLED'}
 
         inicio = escena.frame_start if self.todo_el_rango else escena.frame_current
         fin = escena.frame_end
         if fin < inicio:
-            self.report({'ERROR'}, "El rango de la escena esta al reves")
+            self.report({'ERROR'}, "The scene range is backwards")
             return {'CANCELLED'}
         if fin - inicio > 4000:
             self.report({'ERROR'}, f"{fin - inicio + 1} fotogramas es demasiado; "
@@ -5433,16 +5322,14 @@ class AV_OT_hornear(Operator):
 
 class AV_OT_regenerar_puntos(Operator):
     bl_idname = "audioviz.regenerar_puntos"
-    bl_label = "Regenerar puntos"
-    bl_description = ("Vuelve a repartir los puntos. Necesario si has movido, escalado o "
-                      "editado el modelo del que salen: el plexus nace encima de el pero "
-                      "despues no lo persigue")
+    bl_label = "Regenerate points"
+    bl_description = ("Scatters the points again. Needed if you have moved, scaled or edited the model they come from: the plexus is born on top of it but does not follow it afterwards")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
         ob = contexto.object
         if not es_plexus(ob):
-            self.report({'ERROR'}, "Selecciona un plexus")
+            self.report({'ERROR'}, "Select a plexus")
             return {'CANCELLED'}
         p0, _ = disposicion(ob, forzar=True)
         reconstruir_plexus(contexto.scene, ob)
@@ -5452,19 +5339,18 @@ class AV_OT_regenerar_puntos(Operator):
 
 class AV_OT_ajustar_distancia(Operator):
     bl_idname = "audioviz.ajustar_distancia"
-    bl_label = "Ajustar al tamano"
-    bl_description = ("Pone la distancia de union a partir de lo separados que estan los "
-                      "puntos, para que salga una malla razonable sin ir a tientas")
+    bl_label = "Fit to size"
+    bl_description = ("Sets the link distance from how far apart the points actually are, so you get a reasonable mesh without guessing")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
         ob = contexto.object
         if not es_plexus(ob):
-            self.report({'ERROR'}, "Selecciona un plexus")
+            self.report({'ERROR'}, "Select a plexus")
             return {'CANCELLED'}
         sugerida = distancia_sugerida(ob)
         if sugerida <= 0.0:
-            self.report({'ERROR'}, "No he podido calcularla")
+            self.report({'ERROR'}, "Could not work it out")
             return {'CANCELLED'}
         ob.audioviz_plex.distancia = sugerida
         self.report({'INFO'}, f"Distancia de union: {sugerida:.3f}")
@@ -5473,8 +5359,8 @@ class AV_OT_ajustar_distancia(Operator):
 
 class AV_OT_seleccionar_plexus(Operator):
     bl_idname = "audioviz.seleccionar_plexus"
-    bl_label = "Seleccionar plexus"
-    bl_description = "Hace activo este plexus para poder editar sus ajustes en el panel"
+    bl_label = "Select plexus"
+    bl_description = "Makes this plexus active so you can edit its settings in the panel"
     bl_options = {'REGISTER', 'UNDO'}
 
     nombre: StringProperty()
@@ -5493,15 +5379,14 @@ class AV_OT_seleccionar_plexus(Operator):
 
 class AV_OT_material_unico(Operator):
     bl_idname = "audioviz.material_unico"
-    bl_label = "Desvincular material"
-    bl_description = ("Da a este plexus una copia propia del material. Util despues de "
-                      "duplicar con Shift+D, que deja el material compartido")
+    bl_label = "Make material single-user"
+    bl_description = ("Gives this plexus its own copy of the material. Useful after duplicating with Shift+D, which leaves the material shared")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, contexto):
         ob = contexto.object
         if not es_plexus(ob):
-            self.report({'ERROR'}, "Selecciona un plexus")
+            self.report({'ERROR'}, "Select a plexus")
             return {'CANCELLED'}
         modif = modificador_plexus(ob)
         ident = identificador_entrada(modif.node_group, "Material")
@@ -5514,8 +5399,8 @@ class AV_OT_material_unico(Operator):
 
 class AV_OT_limpiar(Operator):
     bl_idname = "audioviz.limpiar"
-    bl_label = "Borrar todo"
-    bl_description = "Elimina el Empty, las barras, los materiales y la animacion generados"
+    bl_label = "Delete everything"
+    bl_description = "Removes the Empty, the bars, the materials and the generated animation"
     bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, contexto, evento):
@@ -5569,7 +5454,7 @@ class AV_OT_limpiar(Operator):
                 bpy.data.node_groups.remove(ng)
 
         contexto.scene.audioviz.info = ""
-        self.report({'INFO'}, "Limpiado")
+        self.report({'INFO'}, "Cleaned up")
         return {'FINISHED'}
 
 
@@ -5595,7 +5480,7 @@ class AV_PT_panel(Panel):
         caja = d.box()
         caja.label(text=f"1. Audios cargados ({len(lista)})", icon='SOUND')
         if lista:
-            caja.prop(aj, "fuente", text="Activa")
+            caja.prop(aj, "fuente", text="Active")
 
         fila = caja.row(align=True)
         fila.prop(aj, "fotograma_inicial")
@@ -5606,17 +5491,17 @@ class AV_PT_panel(Panel):
         # Analizar aqui mismo: no hace falta ningun programa de fuera.
         col = caja.column(align=True)
         col.scale_y = 1.3
-        col.operator("audioviz.analizar_audio", text="Analizar un audio...",
+        col.operator("audioviz.analizar_audio", text="Analyze audio...",
                      icon='FILE_SOUND').reemplazar = False
         if empty is not None:
             fila = caja.row(align=True)
-            fila.operator("audioviz.analizar_audio", text="Reemplazar el audio de esta fuente",
+            fila.operator("audioviz.analizar_audio", text="Replace this source's audio",
                           icon='FILE_REFRESH').reemplazar = True
 
         cabecera = caja.row(align=True)
         cabecera.prop(aj, "mostrar_avanzado", emboss=False,
                       icon='TRIA_DOWN' if aj.mostrar_avanzado else 'TRIA_RIGHT',
-                      text="Ajustes del analisis")
+                      text="Analysis settings")
         if aj.mostrar_avanzado:
             sub = caja.column(align=True)
             sub.prop(aj, "bandas")
@@ -5627,16 +5512,16 @@ class AV_PT_panel(Panel):
             sub.prop(aj, "norm")
             sub.prop(aj, "analizar_estereo")
             sub.prop(aj, "guardar_json")
-            sub.label(text="El suavizado se ajusta luego, en vivo", icon='INFO')
+            sub.label(text="Smoothing is adjusted afterwards, live", icon='INFO')
 
         cabecera = caja.row(align=True)
-        cabecera.label(text="o cargar un .json ya analizado:", icon='FILE_BLANK')
+        cabecera.label(text="or load an already analyzed .json:", icon='FILE_BLANK')
         caja.prop(aj, "ruta_json", text="")
         fila = caja.row(align=True)
-        fila.operator("audioviz.importar", text="Cargar JSON",
+        fila.operator("audioviz.importar", text="Load JSON",
                       icon='IMPORT').reemplazar = False
         if empty is not None:
-            fila.operator("audioviz.importar", text="Reemplazar con JSON",
+            fila.operator("audioviz.importar", text="Replace with JSON",
                           icon='FILE_REFRESH').reemplazar = True
 
         if empty is not None and empty.audioviz_audio.info:
@@ -5651,10 +5536,10 @@ class AV_PT_panel(Panel):
                           icon='SEQ_SEQUENCER' if aud_act.oir_audio else 'MUTE_IPO_ON')
                 fila.operator("audioviz.tira_sonido", text="", icon='X').quitar = True
             elif aud_act.ruta_audio:
-                fila.operator("audioviz.tira_sonido", text="Recuperar el audio en la pista",
+                fila.operator("audioviz.tira_sonido", text="Restore audio strip",
                               icon='SEQ_SEQUENCER').quitar = False
             else:
-                fila.label(text="sin audio: viene de un .json", icon='INFO')
+                fila.label(text="no audio: it came from a .json", icon='INFO')
 
         if empty is None:
             d.separator()
@@ -5679,27 +5564,27 @@ class AV_PT_panel(Panel):
             sub.label(text=f"un pico cae a cero en {aud.caida * aud.fps:.0f} fotogramas",
                       icon='IPO_LINEAR')
         else:
-            sub.label(text="sigue al audio tal cual", icon='IPO_CONSTANT')
+            sub.label(text="follows the audio exactly", icon='IPO_CONSTANT')
 
         fila = sub.row(align=True)
         fila.operator("audioviz.quitar_suavizado", icon='X')
         fila.operator("audioviz.reaplicar", icon='FILE_REFRESH')
         if not hay_crudos:
-            caja.label(text="Reimporta el JSON para activarlo", icon='INFO')
+            caja.label(text="Re-import the JSON to enable it", icon='INFO')
 
         # --- 3. compas ---
         caja = d.box()
-        caja.label(text="3. Compas y ritmo", icon='PLAY_SOUND')
+        caja.label(text="3. Beat and rhythm", icon='PLAY_SOUND')
         sub = caja.column()
         sub.enabled = hay_crudos
 
         if not aud.compas_activo:
-            sub.label(text="sin compas: no lo encontro, o lo quitaste", icon='INFO')
+            sub.label(text="no beat: not found, or you removed it", icon='INFO')
             fila = sub.row(align=True)
-            fila.prop(aud, "banda_min_compas", text="Bandas")
-            fila.prop(aud, "banda_max_compas", text="a")
-            sub.label(text="prueba con otras bandas y vuelve a buscar")
-            sub.operator("audioviz.detectar_compas", text="Buscar el compas",
+            fila.prop(aud, "banda_min_compas", text="Bands")
+            fila.prop(aud, "banda_max_compas", text="to")
+            sub.label(text="try other bands and search again")
+            sub.operator("audioviz.detectar_compas", text="Find the beat",
                          icon='TIME')
         else:
             if aud.bpm_detectado > 0.0:
@@ -5710,8 +5595,7 @@ class AV_PT_panel(Panel):
                                    f"{aud.compas_trozos} trozos del tema coinciden",
                               icon='DOT')
                 else:
-                    sub.label(text="    tema corto: no he podido comprobarlo "
-                                   "por trozos", icon='DOT')
+                    sub.label(text="    short track: could not check it in chunks", icon='DOT')
             fila = sub.row(align=True)
             fila.prop(aud, "bpm")
             fila.operator("audioviz.medio_tempo", text="x2").factor = 2.0
@@ -5725,13 +5609,13 @@ class AV_PT_panel(Panel):
             sub.label(text=f"un pulso cada {periodo:.2f} fotogramas "
                            f"({60.0 / max(aud.bpm, 1e-6):.3f} s)", icon='IPO_LINEAR')
             fila = sub.row(align=True)
-            fila.operator("audioviz.detectar_compas", text="Volver a detectar",
+            fila.operator("audioviz.detectar_compas", text="Detect again",
                           icon='FILE_REFRESH')
             fila.operator("audioviz.quitar_compas", icon='X')
 
         # --- ver el analisis ---
         caja = d.box()
-        caja.label(text="Ver el analisis", icon='SEQ_HISTOGRAM')
+        caja.label(text="Show analysis", icon='SEQ_HISTOGRAM')
         nombre_img = f"{NOMBRE_IMAGEN}_{etiqueta_fuente(empty)}"
         img = bpy.data.images.get(nombre_img)
         if es_estereo(empty):
@@ -5749,10 +5633,10 @@ class AV_PT_panel(Panel):
                 caja.template_icon(icon_value=icono, scale=7.0)
             caja.label(text=f"'{img.name}' · {img.size[0]}x{img.size[1]}",
                        icon='IMAGE_DATA')
-            caja.label(text="abrelo en un editor de imagenes para verlo grande")
+            caja.label(text="open it in an image editor to see it large")
 
         caja = d.box()
-        caja.label(text="Valores en este fotograma", icon='GRAPH')
+        caja.label(text="Values on this frame", icon='GRAPH')
         canales_ver = ('MONO', 'IZQ', 'DER') if es_estereo(empty) else ('MONO',)
         for canal_ver in canales_ver:
             prefijo_ver = PREFIJOS_CANAL[canal_ver]
@@ -5784,7 +5668,7 @@ class AV_PT_base_preset(Panel):
 def aviso_compas(disposicion, fuente):
     """Recuerda que hay que detectar el compas antes de que el control sirva."""
     if not tiene_compas(fuente):
-        disposicion.label(text="detecta el compas arriba para usarlo", icon='INFO')
+        disposicion.label(text="detect the beat above to use this", icon='INFO')
         return False
     return True
 
@@ -5794,12 +5678,12 @@ def selector_canal(disposicion, datos, propiedad, fuente):
     if es_estereo(fuente):
         disposicion.prop(datos, propiedad)
         return True
-    disposicion.label(text="mono: marca 'Analizar en estereo' al cargar", icon='INFO')
+    disposicion.label(text="mono: tick 'Analyze in stereo' when loading", icon='INFO')
     return False
 
 
 class AV_PT_barras(AV_PT_base_preset, Panel):
-    bl_label = "Preset: barras"
+    bl_label = "Preset: bars"
     bl_idname = "AV_PT_barras"
 
     def draw(self, contexto):
@@ -5823,7 +5707,7 @@ class AV_PT_barras(AV_PT_base_preset, Panel):
 
 
 class AV_PT_pulso(AV_PT_base_preset, Panel):
-    bl_label = "Preset: el compas en cubos"
+    bl_label = "Preset: beat cubes"
     bl_idname = "AV_PT_pulso"
 
     def draw(self, contexto):
@@ -5844,14 +5728,14 @@ class AV_PT_pulso(AV_PT_base_preset, Panel):
             d.label(text=f"{n} cubos, uno por tiempo · "
                          f"{fuente.audioviz_audio.bpm:.1f} BPM", icon='PLAY_SOUND')
         else:
-            d.label(text="detecta el compas arriba para usarlo", icon='INFO')
+            d.label(text="detect the beat above to use this", icon='INFO')
         sub = d.column()
         sub.enabled = tiene_compas(fuente)
         sub.operator("audioviz.crear_pulso", icon='PLUS')
 
 
 class AV_PT_led(AV_PT_base_preset, Panel):
-    bl_label = "Preset: ecualizador LED"
+    bl_label = "Preset: LED equalizer"
     bl_idname = "AV_PT_led"
 
     def draw(self, contexto):
@@ -5869,7 +5753,7 @@ class AV_PT_led(AV_PT_base_preset, Panel):
         col.prop(aj, "led_paso")
         col.prop(aj, "led_separacion")
         if aj.led_paso <= aj.led_alto:
-            d.label(text="Sube el paso por encima del alto para que haya hueco", icon='INFO')
+            d.label(text="Raise the step above the height to leave a gap", icon='INFO')
 
         col = d.column(align=True)
         col.prop(aj, "led_brillo")
@@ -5897,10 +5781,10 @@ class AV_PT_plexus(AV_PT_base_preset, Panel):
         d = self.layout
 
         if np is None:
-            d.label(text="Necesita numpy y no esta disponible", icon='ERROR')
+            d.label(text="Needs numpy and it is not available", icon='ERROR')
             return
 
-        d.operator("audioviz.crear_plexus", text="Anadir un plexus", icon='PLUS')
+        d.operator("audioviz.crear_plexus", text="Add a plexus", icon='PLUS')
 
         lista = plexus_de_la_escena(contexto.scene)
         ob = contexto.object
@@ -5908,7 +5792,7 @@ class AV_PT_plexus(AV_PT_base_preset, Panel):
         if not es_plexus(ob):
             if lista:
                 caja = d.box()
-                caja.label(text="Elige cual editar:", icon='INFO')
+                caja.label(text="Choose which one to edit:", icon='INFO')
                 col = caja.column(align=True)
                 for o in lista:
                     col.operator("audioviz.seleccionar_plexus", text=o.name,
@@ -5924,7 +5808,7 @@ class AV_PT_plexus(AV_PT_base_preset, Panel):
         col = caja.column(align=True)
         col.prop(p, "fuente", text="Audio")
         if not es_fuente(p.fuente):
-            col.label(text="Sin audio propio: usa el activo", icon='INFO')
+            col.label(text="No audio of its own: uses the active one", icon='INFO')
 
         col = caja.column(align=True)
         col.prop(p, "forma")
@@ -5932,9 +5816,9 @@ class AV_PT_plexus(AV_PT_base_preset, Panel):
         if de_modelo:
             col.prop(p, "objeto_origen")
             if p.objeto_origen is None:
-                col.label(text="Elige un modelo (mientras, esfera)", icon='ERROR')
+                col.label(text="Pick a model (sphere in the meantime)", icon='ERROR')
             elif p.forma == 'VOLUMEN':
-                col.label(text="La malla debe estar cerrada", icon='INFO')
+                col.label(text="The mesh must be closed", icon='INFO')
         col.prop(p, "puntos")
         if not de_modelo:
             col.prop(p, "radio")
@@ -5943,18 +5827,18 @@ class AV_PT_plexus(AV_PT_base_preset, Panel):
             col.operator("audioviz.regenerar_puntos", icon='FILE_REFRESH')
 
         col = caja.column(align=True)
-        col.label(text="Que frecuencias lo mueven:")
+        col.label(text="Which frequencies drive it:")
         selector_canal(col, p, "canal",
                        p.fuente if es_fuente(p.fuente) else fuente_activa(contexto.scene))
         col.prop(p, "asignacion")
         fila = col.row(align=True)
-        fila.prop(p, "banda_min", text="De")
-        fila.prop(p, "banda_max", text="a")
+        fila.prop(p, "banda_min", text="From")
+        fila.prop(p, "banda_max", text="to")
         col.prop(p, "suave")
         col.prop(p, "amplitud")
 
         col = caja.column(align=True)
-        col.label(text="Ritmo:")
+        col.label(text="Rhythm:")
         col.prop(p, "pulso_amplitud")
 
         col = caja.column(align=True)
@@ -5982,7 +5866,7 @@ class AV_PT_plexus(AV_PT_base_preset, Panel):
         aviso_compas(caja, fuente_plex)
 
         col = caja.column(align=True)
-        col.label(text="Como se traza:")
+        col.label(text="How it is drawn:")
         fila = col.row(align=True)
         fila.prop(p, "distancia")
         fila.operator("audioviz.ajustar_distancia", text="", icon='DRIVER_DISTANCE')
@@ -5991,7 +5875,7 @@ class AV_PT_plexus(AV_PT_base_preset, Panel):
         col.prop(p, "tam_punto")
 
         col = caja.column(align=True)
-        col.label(text="Color de las lineas:")
+        col.label(text="Line colour:")
         fila = col.row(align=True)
         fila.prop(p, "color_grave", text="")
         fila.prop(p, "color_medio", text="")
@@ -6023,8 +5907,8 @@ class AV_PT_plexus(AV_PT_base_preset, Panel):
             # Sin triangulos cerrados no hay caras que rellenar, y con pocas
             # conexiones por punto casi ninguno se cierra.
             if p.conexiones < 6:
-                col.label(text="Sube 'Conexiones por punto' a 6-10 para que", icon='INFO')
-                col.label(text="se cierren triangulos y haya membrana")
+                col.label(text="Raise 'Links per point' to 6-10 so that", icon='INFO')
+                col.label(text="triangles close and a membrane appears")
 
         mat = material_de_plexus(ob)
         if mat is not None and mat.users > 1:
@@ -6040,23 +5924,23 @@ class AV_PT_plexus(AV_PT_base_preset, Panel):
 
 
 class AV_PT_paisaje(AV_PT_base_preset, Panel):
-    bl_label = "Preset: paisaje que avanza"
+    bl_label = "Preset: scrolling landscape"
     bl_idname = "AV_PT_paisaje"
 
     def draw(self, contexto):
         d = self.layout
         if np is None:
-            d.label(text="Necesita numpy y no esta disponible", icon='ERROR')
+            d.label(text="Needs numpy and it is not available", icon='ERROR')
             return
 
-        d.operator("audioviz.crear_paisaje", text="Anadir un paisaje", icon='PLUS')
+        d.operator("audioviz.crear_paisaje", text="Add a landscape", icon='PLUS')
 
         lista = paisajes_de_la_escena(contexto.scene)
         ob = contexto.object
         if not es_paisaje(ob):
             if lista:
                 caja = d.box()
-                caja.label(text="Elige cual editar:", icon='INFO')
+                caja.label(text="Choose which one to edit:", icon='INFO')
                 col = caja.column(align=True)
                 for o in lista:
                     col.operator("audioviz.seleccionar_plexus", text=o.name,
@@ -6073,7 +5957,7 @@ class AV_PT_paisaje(AV_PT_base_preset, Panel):
         col.prop(p, "fuente", text="Audio")
 
         col = caja.column(align=True)
-        col.label(text="Movimiento:")
+        col.label(text="Movement:")
         col.prop(p, "direccion")
         col.prop(p, "fotogramas_por_fila")
         fuente = p.fuente if es_fuente(p.fuente) else fuente_activa(contexto.scene)
@@ -6084,7 +5968,7 @@ class AV_PT_paisaje(AV_PT_base_preset, Panel):
                   icon='TIME')
 
         col = caja.column(align=True)
-        col.label(text="Rejilla:")
+        col.label(text="Grid:")
         col.prop(p, "filas")
         col.prop(p, "columnas")
         col.prop(p, "ancho")
@@ -6092,7 +5976,7 @@ class AV_PT_paisaje(AV_PT_base_preset, Panel):
         col.prop(p, "altura")
 
         col = caja.column(align=True)
-        col.label(text="Repetir a los lados:")
+        col.label(text="Repeat sideways:")
         col.prop(p, "repeticiones")
         sub = col.row()
         sub.enabled = p.repeticiones > 1
@@ -6102,15 +5986,15 @@ class AV_PT_paisaje(AV_PT_base_preset, Panel):
                        f"{p.ancho * p.repeticiones:.1f} de ancho total", icon='MESH_DATA')
 
         col = caja.column(align=True)
-        col.label(text="Frecuencias:")
+        col.label(text="Frequencies:")
         selector_canal(col, p, "canal", fuente)
         fila = col.row(align=True)
-        fila.prop(p, "banda_min", text="De")
-        fila.prop(p, "banda_max", text="a")
+        fila.prop(p, "banda_min", text="From")
+        fila.prop(p, "banda_max", text="to")
         col.prop(p, "suave")
 
         col = caja.column(align=True)
-        col.label(text="Moldear el relieve:")
+        col.label(text="Shape the relief:")
         col.prop(p, "ganancia")
         col.prop(p, "curva")
         col.prop(p, "inclinacion", slider=True)
@@ -6134,7 +6018,7 @@ class AV_PT_paisaje(AV_PT_base_preset, Panel):
         aviso_compas(col, fuente)
 
         col = caja.column(align=True)
-        col.label(text="Aspecto:")
+        col.label(text="Look:")
         col.prop(p, "modo")
         sub = col.column(align=True)
         sub.enabled = p.modo != 'SOLIDO'
@@ -6156,17 +6040,17 @@ class AV_PT_paisaje(AV_PT_base_preset, Panel):
 
 
 class AV_PT_enjambre(AV_PT_base_preset, Panel):
-    bl_label = "Preset: enjambre orbital"
+    bl_label = "Preset: orbital swarm"
     bl_idname = "AV_PT_enjambre"
 
     def draw(self, contexto):
         d = self.layout
 
         if np is None:
-            d.label(text="Necesita numpy y no esta disponible", icon='ERROR')
+            d.label(text="Needs numpy and it is not available", icon='ERROR')
             return
 
-        d.operator("audioviz.crear_enjambre", text="Anadir un enjambre", icon='PLUS')
+        d.operator("audioviz.crear_enjambre", text="Add a swarm", icon='PLUS')
 
         lista = enjambres_de_la_escena(contexto.scene)
         ob = contexto.object
@@ -6174,7 +6058,7 @@ class AV_PT_enjambre(AV_PT_base_preset, Panel):
         if not es_enjambre(ob):
             if lista:
                 caja = d.box()
-                caja.label(text="Elige cual editar:", icon='INFO')
+                caja.label(text="Choose which one to edit:", icon='INFO')
                 col = caja.column(align=True)
                 for o in lista:
                     col.operator("audioviz.seleccionar_plexus", text=o.name,
@@ -6192,10 +6076,10 @@ class AV_PT_enjambre(AV_PT_base_preset, Panel):
         col = caja.column(align=True)
         col.prop(p, "fuente", text="Audio")
         if not es_fuente(p.fuente):
-            col.label(text="Sin audio propio: usa el activo", icon='INFO')
+            col.label(text="No audio of its own: uses the active one", icon='INFO')
 
         col = caja.column(align=True)
-        col.label(text="La nube:")
+        col.label(text="The cloud:")
         col.prop(p, "forma")
         col.prop(p, "particulas")
         col.prop(p, "radio")
@@ -6204,31 +6088,31 @@ class AV_PT_enjambre(AV_PT_base_preset, Panel):
         col.prop(p, "semilla")
 
         col = caja.column(align=True)
-        col.label(text="Giro:")
+        col.label(text="Spin:")
         col.prop(p, "giro")
         col.prop(p, "diferencial")
 
         col = caja.column(align=True)
-        col.label(text="Que frecuencias la mueven:")
+        col.label(text="Which frequencies drive it:")
         selector_canal(col, p, "canal", fuente)
         col.prop(p, "reparto")
         fila = col.row(align=True)
-        fila.prop(p, "banda_min", text="De")
-        fila.prop(p, "banda_max", text="a")
+        fila.prop(p, "banda_min", text="From")
+        fila.prop(p, "banda_max", text="to")
         col.prop(p, "suave")
 
         col = caja.column(align=True)
-        col.label(text="Cuanto manda cada zona del espectro:")
+        col.label(text="How much each part of the spectrum rules:")
         fila = col.row(align=True)
         fila.prop(p, "peso_graves")
         fila.prop(p, "peso_medios")
         fila.prop(p, "peso_agudos")
         if p.peso_graves == p.peso_medios == p.peso_agudos == 1.0:
-            col.label(text="los tres a 1: sin tocar", icon='DOT')
-        col.label(text="afecta al movimiento y al brillo", icon='INFO')
+            col.label(text="all three at 1: untouched", icon='DOT')
+        col.label(text="affects movement and brightness", icon='INFO')
 
         col = caja.column(align=True)
-        col.label(text="Como reacciona a las frecuencias:")
+        col.label(text="How it reacts to the frequencies:")
         col.prop(p, "empuje")
         col.prop(p, "fuerza")
         sub = col.column(align=True)
@@ -6236,12 +6120,12 @@ class AV_PT_enjambre(AV_PT_base_preset, Panel):
         sub.prop(p, "vuelta")
         sub.prop(p, "rebote", slider=True)
         if p.fuerza > 0.0 and p.empuje > 0.0:
-            col.label(text="los dos a la vez: se suman", icon='INFO')
+            col.label(text="both at once: they add up", icon='INFO')
         elif p.fuerza == 0.0 and p.empuje == 0.0:
-            col.label(text="con ambos a cero no reacciona al audio", icon='ERROR')
+            col.label(text="with both at zero it does not react to the audio", icon='ERROR')
 
         col = caja.column(align=True)
-        col.label(text="Turbulencia:")
+        col.label(text="Turbulence:")
         col.prop(p, "turbulencia")
         sub = col.column(align=True)
         sub.enabled = p.turbulencia > 0.0
@@ -6250,7 +6134,7 @@ class AV_PT_enjambre(AV_PT_base_preset, Panel):
         sub.prop(p, "turb_audio", slider=True)
 
         col = caja.column(align=True)
-        col.label(text="Ritmo:")
+        col.label(text="Rhythm:")
         if aviso_compas(col, fuente):
             sub = col.column(align=True)
             sub.prop(p, "pulso_onda")
@@ -6263,7 +6147,7 @@ class AV_PT_enjambre(AV_PT_base_preset, Panel):
             fila.prop(p, "compas_onda_grosor")
 
         col = caja.column(align=True)
-        col.label(text="Aspecto:")
+        col.label(text="Look:")
         col.prop(p, "tam_punto")
         col.prop(p, "reaccion_tam")
         col.prop(p, "color_grave")
@@ -6281,7 +6165,7 @@ class AV_PT_enjambre(AV_PT_base_preset, Panel):
 
 class AV_PT_atributos(Panel):
     """Chuleta de los atributos que las mallas dejan disponibles al shader."""
-    bl_label = "Atributos para el shader"
+    bl_label = "Attributes for your shader"
     bl_idname = "AV_PT_atributos"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -6291,44 +6175,44 @@ class AV_PT_atributos(Panel):
 
     def draw(self, contexto):
         d = self.layout
-        d.label(text="Nodo Attribute · Tipo: Geometry", icon='NODE')
-        d.label(text="Los llevan el plexus Y su objeto de caras.")
+        d.label(text="Attribute node · Type: Geometry", icon='NODE')
+        d.label(text="Both the plexus AND its faces object carry them.")
 
         caja = d.box()
         col = caja.column(align=True)
         col.label(text="av_nivel", icon='RNA')
-        col.label(text="    0 = graves · 1 = agudos")
-        col.label(text="    Donde cae el punto en el espectro.")
-        col.label(text="    Fijo: no cambia con la musica.")
+        col.label(text="    0 = lows · 1 = highs")
+        col.label(text="    Where the point sits in the spectrum.")
+        col.label(text="    Fixed: it does not change with the music.")
 
         caja = d.box()
         col = caja.column(align=True)
         col.label(text="av_intensidad", icon='RNA')
-        col.label(text="    0 = callado · 1 = a tope")
-        col.label(text="    Cuanto suena su banda en este fotograma.")
-        col.label(text="    Este es el que reacciona.")
+        col.label(text="    0 = quiet · 1 = full")
+        col.label(text="    How loud its band is on this frame.")
+        col.label(text="    This is the one that reacts.")
 
         col = d.column(align=True)
-        col.label(text="Ambos son de dominio PUNTO, asi que el")
-        col.label(text="shader los interpola por la cara: cada")
-        col.label(text="triangulo sale degradado entre sus tres")
-        col.label(text="esquinas, y cada linea entre sus dos puntas.")
+        col.label(text="Both are POINT domain, so the shader")
+        col.label(text="interpolates them across the face: every")
+        col.label(text="triangle comes out graded between its three")
+        col.label(text="corners, and every line between its two ends.")
 
         d.separator()
         col = d.column(align=True)
-        col.label(text="Salida a usar del nodo Attribute:", icon='DOT')
-        col.label(text="    'Factor' (es un numero, no un color)")
+        col.label(text="Output to use from the Attribute node:", icon='DOT')
+        col.label(text="    'Factor' (it is a number, not a colour)")
 
         d.separator()
         caja = d.box()
         col = caja.column(align=True)
-        col.label(text="En el ENJAMBRE, tipo: Instancer", icon='ERROR')
-        col.label(text="Lo que ves ahi son bolitas instanciadas,")
-        col.label(text="y los valores viven en el punto que las")
-        col.label(text="instancia, no en la bolita. Con 'Geometry'")
-        col.label(text="saldrian todas del mismo color.")
-        col.label(text="Ademas lleva un tercero:")
-        col.label(text="    av_golpe · 0..1, cuanto le da la onda ahora")
+        col.label(text="In the SWARM, type: Instancer", icon='ERROR')
+        col.label(text="What you see there are instanced spheres,")
+        col.label(text="and the values live on the point that")
+        col.label(text="instances them, not on the sphere. With 'Geometry'")
+        col.label(text="they would all come out the same colour.")
+        col.label(text="It also carries a third one:")
+        col.label(text="    av_golpe · 0..1, how much the wave hits it now")
 
 
 # ---------------------------------------------------------------------------
@@ -6383,9 +6267,39 @@ def _quitar_handler():
                 coleccion.remove(h)
 
 
+# La interfaz esta escrita en ingles, que es el idioma fuente que Blender espera,
+# y el castellano va en un diccionario aparte. Blender elige uno u otro segun el
+# idioma de cada usuario, asi que no hay dos versiones del panel que mantener.
+# El import es tolerante a fallos porque este archivo tambien se ejecuta suelto
+# desde las pruebas, donde no hay paquete del que importar.
+try:
+    from . import traducciones as _traducciones
+except Exception:
+    _traducciones = None
+
+
+def _poner_traducciones():
+    if _traducciones is None:
+        return
+    try:
+        bpy.app.translations.register(__name__, _traducciones.TRADUCCIONES)
+    except Exception as e:
+        print(f"Audio Viz: no he podido registrar las traducciones: {e}")
+
+
+def _quitar_traducciones():
+    if _traducciones is None:
+        return
+    try:
+        bpy.app.translations.unregister(__name__)
+    except Exception:
+        pass
+
+
 def register():
     for c in clases:
         bpy.utils.register_class(c)
+    _poner_traducciones()
     bpy.types.Scene.audioviz = PointerProperty(type=AV_Ajustes)
     # Igual que el plexus, cada fuente de audio lleva sus ajustes pegados al
     # OBJETO y no a la escena: es lo que permite tener varias a la vez.
@@ -6402,6 +6316,7 @@ def register():
 
 
 def unregister():
+    _quitar_traducciones()
     _quitar_handler()
     del bpy.types.Object.audioviz_enj
     del bpy.types.Object.audioviz_paisaje

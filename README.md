@@ -102,9 +102,13 @@ PNG numerados en vez de vídeo a propósito: si se corta, no pierdes lo hecho.
 
 ## Qué hay en el repositorio
 
+La interfaz está en inglés, y el castellano va registrado como traducción: si
+tienes Blender en español, el panel te sale en español sin hacer nada.
+
 ```
 extension/audio_viz/
   blender_audio_viz.py     todo el código
+  traducciones.py          el panel en castellano
   blender_manifest.toml    nombre, versión, licencia
   __init__.py              enganche con Blender
 
