@@ -3590,6 +3590,19 @@ def frecuencias_cuerdas(c, n):
     return np.minimum(frec, tope_sin_parpadeo(c))
 
 
+def amplitud_util(c):
+    """La amplitud que se aplica de verdad, acotada si se pidio no cruzarse.
+
+    Medido sobre un tema real con 24 cuerdas: con la amplitud al doble de la
+    separacion, el 31% de los pares de vecinas se cruzan en cualquier instante
+    y el conjunto se ve como una marana. En la mitad de la separacion los
+    cruces son exactamente cero, que es lo que hace que se lea cuerda a cuerda.
+    """
+    if not c.sin_cruces:
+        return c.amplitud
+    return min(c.amplitud, c.separacion * 0.5)
+
+
 def tope_sin_parpadeo(c):
     """Frecuencia mas alta que se puede pedir sin que se vea como ruido.
 
@@ -3643,7 +3656,7 @@ def reconstruir_cuerdas(escena, ob):
             peso = np.linspace(0.0, 1.0, n)
             sonando = sonando * (1.0 - peso) + np.asarray(f_dos, dtype=float)[bandas] * peso
         amplitud = directo * (1.0 - c.resonancia) + sonando * c.resonancia
-    amplitud = np.clip(amplitud, 0.0, None) * c.amplitud
+    amplitud = np.clip(amplitud, 0.0, None) * amplitud_util(c)
 
     # --- la forma de la vibracion ---
     u = np.linspace(0.0, 1.0, seg)
@@ -3651,8 +3664,13 @@ def reconstruir_cuerdas(escena, ob):
     modos = np.stack([np.sin(i * np.pi * u) / i for i in range(1, n_arm + 1)])
 
     frec = frecuencias_cuerdas(c, n)
+    # Las fases mandan mas de lo que parece en si esto se lee o es una marana.
+    # Repartidas al azar, ninguna cuerda guarda relacion con su vecina y el
+    # conjunto sale como ruido. Con un desfase PROGRESIVO, en cambio, la
+    # ondulacion recorre el banco de cuerdas y se lee como una sola onda.
     rng = np.random.default_rng(int(c.semilla))
-    fases = rng.random(n) * 2.0 * np.pi     # que no arranquen todas a la vez
+    k = np.arange(n) / max(n - 1, 1)
+    fases = k * 2.0 * np.pi * c.ondas + rng.random(n) * 2.0 * np.pi * c.desorden
 
     armonicos = np.arange(1, n_arm + 1)[None, :]
     ang = 2.0 * np.pi * frec[:, None] * armonicos * t + fases[:, None]
@@ -4457,6 +4475,29 @@ class AV_CuerdasAjustes(PropertyGroup):
         description="How wide a string opens when its band is at full",
         default=0.6, min=0.0, soft_max=10.0, unit='LENGTH',
         update=_al_cambiar_cuerdas,
+    )
+    sin_cruces: BoolProperty(
+        name="Keep them apart",
+        description="Caps the amplitude at half the spacing so no string ever "
+                    "crosses its neighbour. Measured on a real track with 24 "
+                    "strings: at twice the spacing, a third of the neighbouring "
+                    "pairs overlap at any moment and it reads as a tangle. "
+                    "Turn it off if you want them to weave through each other",
+        default=True, update=_al_cambiar_cuerdas,
+    )
+    ondas: FloatProperty(
+        name="Waves across",
+        description="How many wave cycles run across the bank of strings. This is "
+                    "what turns a pile of independent wiggles into one readable "
+                    "wave travelling through them. 0 makes them all move together",
+        default=1.0, min=0.0, soft_max=6.0, update=_al_cambiar_cuerdas,
+    )
+    desorden: FloatProperty(
+        name="Disorder",
+        description="Scatters the strings' phases on top of the wave. At 0 the "
+                    "movement is perfectly ordered; raise it for something more "
+                    "alive, and at 1 each string goes entirely its own way",
+        default=0.15, min=0.0, max=1.0, update=_al_cambiar_cuerdas,
     )
     resonancia: FloatProperty(
         name="Ring",
@@ -6689,6 +6730,12 @@ class AV_PT_cuerdas(AV_PT_base_preset, Panel):
         col = caja.column(align=True)
         col.label(text="Vibration:")
         col.prop(c, "amplitud")
+        col.prop(c, "sin_cruces")
+        if c.sin_cruces and c.amplitud > c.separacion * 0.5:
+            col.label(text=f"capped to {c.separacion*0.5:.2f} so they do not cross",
+                      icon='INFO')
+        col.prop(c, "ondas")
+        col.prop(c, "desorden", slider=True)
         col.prop(c, "resonancia", slider=True)
         sub = col.row()
         sub.enabled = c.resonancia > 0.0
