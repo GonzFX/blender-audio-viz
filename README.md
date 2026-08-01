@@ -2,6 +2,11 @@
 
 Visualizadores 3D que reaccionan al audio, sin salir de Blender.
 
+![Barras, paisaje, plexus y enjambre de partículas reaccionando a la vez a una misma canción](docs/demo.gif)
+
+*Cuatro presets sonando a la vez sobre el mismo tema. Renderizado con el plugin;
+el GIF va sin sonido.*
+
 Cargas una canción, el plugin la analiza ahí mismo y te deja varios presets
 listos para animar: barras, LEDs, plexus, un paisaje que avanza y un enjambre de
 partículas. Todo se puede tener a la vez, varias veces, cada uno escuchando un
