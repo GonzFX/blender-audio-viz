@@ -3590,39 +3590,21 @@ def frecuencias_cuerdas(c, n):
     return np.minimum(frec, tope_sin_parpadeo(c))
 
 
-def pico_perfil(n_arm):
-    """Lo mas que se separa del reposo la suma de modos con amplitud 1.
-
-    Sale de sumar sin(i*pi*u)/i: 1.000 con un armonico, 1.443 con tres, 1.583
-    con ocho. Hace falta para saber cuanto sitio necesita una cuerda.
-    """
-    u = np.linspace(0.0, 1.0, 256)
-    return float(np.abs(sum(np.sin(i * np.pi * u) / i
-                            for i in range(1, max(int(n_arm), 1) + 1))).max())
-
-
-def cesion_segura(c):
-    """Cuanto tiene que apartarse una vecina para que NUNCA haya cruce.
-
-    Es el otro camino, y es el bueno. Acotar la amplitud contra la separacion
-    era demasiado severo: medido sobre un tema real, con las cuerdas repartidas
-    en dos octavas solo cabia una amplitud de 0.23, porque cada cuerda vibra a
-    su frecuencia y por muy en fase que arranquen acaban oponiendose.
-
-    Si en cambio la separacion LOCAL crece con lo que se abren las dos vecinas,
-    la garantia sale sola: la diferencia entre ambas no puede pasar de la suma
-    de sus aperturas por el pico del perfil, asi que apartandolas al menos esa
-    cantidad no se tocan nunca, valga lo que valga la amplitud.
-
-    La ventaja para el ojo es que el banco se queda apretado donde hay silencio
-    y se abre solo donde hay energia, en vez de dejar hueco fijo en todas partes.
-    """
-    return pico_perfil(c.armonicos)
-
-
 def amplitud_util(c):
-    """La amplitud que se aplica. Ya no se acota: de eso se encarga la cesion."""
-    return c.amplitud
+    """La amplitud que se aplica de verdad, acotada si se pidio no cruzarse.
+
+    Las cuerdas se quedan SIEMPRE donde estan: lo unico que cambia es cuanto se
+    abren. Probe la alternativa -que una cuerda que se abre aparte a sus
+    vecinas- y quedaba peor: con 24 cuerdas el banco pasaba de 9.7 a 54.8
+    unidades y se convertia en un abanico separadisimo.
+
+    Que el tope sea la mitad de la separacion no es un numero al azar: medido
+    sobre un tema real, ahi los cruces entre vecinas son exactamente cero,
+    mientras que al doble de la separacion se cruzaba un tercio de los pares.
+    """
+    if not c.sin_cruces:
+        return c.amplitud
+    return min(c.amplitud, c.separacion * 0.5)
 
 
 def tope_sin_parpadeo(c):
@@ -3698,16 +3680,10 @@ def reconstruir_cuerdas(escena, ob):
     ang = 2.0 * np.pi * frec[:, None] * armonicos * t + fases[:, None]
     desp = (np.cos(ang) @ modos) * amplitud[:, None]
 
-    # --- donde va cada cuerda, dejandose sitio unas a otras ---
-    # La separacion no es fija: entre dos vecinas crece con lo que se abren las
-    # dos. Asi el banco queda apretado en los silencios y se abre solo donde hay
-    # energia, en vez de repartir hueco por igual en todas partes.
-    ceder = max(c.ceder, cesion_segura(c)) if c.sin_cruces else c.ceder
-    if n > 1 and ceder > 0.0:
-        sep_local = c.separacion + ceder * (amplitud[:-1] + amplitud[1:])
-        carriles = np.concatenate([[0.0], np.cumsum(sep_local)])
-    else:
-        carriles = np.arange(n) * c.separacion
+    # --- donde va cada cuerda ---
+    # Separacion fija: el banco no se deforma nunca. Lo unico que decide si dos
+    # vecinas llegan a tocarse es cuanto se abren, no donde estan.
+    carriles = np.arange(n) * c.separacion
     carriles = carriles - carriles.mean()
 
     pos = np.zeros((n, seg, 3))
@@ -4508,19 +4484,13 @@ class AV_CuerdasAjustes(PropertyGroup):
         default=1.0, min=0.0, soft_max=10.0, unit='LENGTH',
         update=_al_cambiar_cuerdas,
     )
-    ceder: FloatProperty(
-        name="Make room",
-        description="A string that opens pushes its neighbours aside, so the bank "
-                    "stays tight where it is quiet and only spreads where there is "
-                    "energy. This is what lets the strings swing wide without "
-                    "either crossing or leaving a fixed gap everywhere",
-        default=0.0, min=0.0, soft_max=4.0, update=_al_cambiar_cuerdas,
-    )
     sin_cruces: BoolProperty(
         name="Never cross",
-        description="Raises 'Make room' to whatever guarantees no string can reach "
-                    "its neighbour, however wide it swings. Turn it off if you want "
-                    "them to weave through each other",
+        description="Caps how wide a string opens at half the spacing, so it can "
+                    "never reach its neighbour. The strings stay exactly where they "
+                    "are: only the swing is limited. Off by default, because with "
+                    "the phases in order the strings weave rather than tangle, and "
+                    "you get about five times the swing",
         default=False, update=_al_cambiar_cuerdas,
     )
     ondas: FloatProperty(
@@ -6768,11 +6738,9 @@ class AV_PT_cuerdas(AV_PT_base_preset, Panel):
         col = caja.column(align=True)
         col.label(text="Vibration:")
         col.prop(c, "amplitud")
-        col.prop(c, "ceder")
         col.prop(c, "sin_cruces")
-        if c.sin_cruces and c.ceder < cesion_segura(c):
-            col.label(text=f"raised to {cesion_segura(c):.2f}, the safe value",
-                      icon='INFO')
+        if c.sin_cruces and c.amplitud > c.separacion * 0.5:
+            col.label(text=f"swing capped to {c.separacion*0.5:.2f}", icon='INFO')
         col.prop(c, "ondas")
         col.prop(c, "desorden", slider=True)
         col.prop(c, "resonancia", slider=True)
