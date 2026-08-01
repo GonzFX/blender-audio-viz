@@ -135,7 +135,7 @@ audio decoder and the ffmpeg Blender already ships.
 
 ### The standalone analyzer (optional)
 
-[Releases](../../releases) also carries `extra-analizador-de-audio.exe`: a small
+[Releases](../../releases) also carries `extra-audio-analyzer-app.exe`: a small
 windowed program, independent of Blender, that analyzes an audio file and leaves
 the result in a `.json` the plugin can import.
 
@@ -143,7 +143,7 @@ the result in a `.json` the plugin can import.
 it is useful for batch-processing many tracks, for saving an analysis to reuse
 without repeating it, or for handing someone the analysis without the audio.
 
-It ships alongside `extra-analizador-fuente.zip` with its source, because the
+It ships alongside `extra-audio-analyzer-source.zip` with its source, because the
 licence is GPL and the source has to travel with the binary. And because an
 unsigned `.exe` downloaded from the internet deserves to be inspectable.
 
