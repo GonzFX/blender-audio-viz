@@ -1,5 +1,7 @@
-AUDIO VIZ — como ponerlo en marcha
-==================================
+AUDIO VIZ - manual largo, en castellano
+=======================================
+(la version corta y en ingles esta en README.md)
+
 
 Hay dos formas. La primera es la normal; la segunda es para cuando estemos
 tocando el codigo.
@@ -153,7 +155,7 @@ pasado ni choca con las demas. Para leer musica no hace falta.
 Si te montas tu propio material para el enjambre, el nodo Attribute tiene que ir
 en tipo INSTANCER, no Geometry: lo que se ve son bolitas instanciadas y los
 valores estan en el punto que las instancia. Con Geometry saldrian todas del
-mismo color. Ademas del av_nivel y av_intensidad de siempre, lleva av_golpe:
+mismo color. Ademas del av_level y av_intensity de siempre, lleva av_beat:
 cuanto le esta dando la onda del compas en este fotograma.
 
 
@@ -219,11 +221,12 @@ pero si has subido mucho la amplitud el operador te avisa antes de hacerlo.
 DONDE ESTA CADA COSA
 --------------------
   extension\audio_viz\blender_audio_viz.py   el plugin entero (aqui se edita)
+  extension\audio_viz\traducciones.py        el panel en castellano
   extension\audio_viz\__init__.py            enganche con Blender, 6 lineas
   extension\audio_viz\blender_manifest.toml  nombre, version, licencia
 
-  COMO INSTALAR.txt   este archivo
-  README.md           la version corta, para quien llega de nuevas
+  MANUAL-es.txt       este archivo
+  README.md           la version corta, en ingles
   LICENSE             GPL-3.0-or-later
 
 Y ya esta: el plugin es un solo archivo de Python. No necesita ningun programa

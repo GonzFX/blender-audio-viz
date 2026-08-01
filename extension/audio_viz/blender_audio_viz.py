@@ -62,21 +62,21 @@ NOMBRE_EMPTY = "AudioBands"      # nombre de las fuentes de versiones anteriores
 PREFIJO_FUENTE = "AV_Audio"      # las nuevas se llaman AV_Audio_<nombre del json>
 NOMBRE_COLECCION = "AudioViz"
 PREFIJO_BANDA = "band_"
-PREFIJO_MATERIAL = "AV_Banda_"
+PREFIJO_MATERIAL = "AV_Band_"
 
 # Propiedades internas donde el Empty guarda los valores ORIGINALES del JSON,
 # sin suavizar. No las toques a mano: son la copia maestra desde la que se
 # recalcula la animacion cada vez que mueves los deslizadores de suavizado.
 CLAVE_CRUDO = "av_raw"
 CLAVE_FRAMES = "av_frames"
-CLAVE_BANDAS = "av_bandas"
+CLAVE_BANDAS = "av_bands"
 
 # Estereo. El canal MONO es el de siempre y no se toca, para que nada de lo ya
 # hecho cambie; los otros dos solo existen si el archivo traia dos canales.
-CLAVE_CRUDO_IZQ = "av_raw_izq"
-CLAVE_CRUDO_DER = "av_raw_der"
-PREFIJO_BANDA_IZQ = "band_izq_"
-PREFIJO_BANDA_DER = "band_der_"
+CLAVE_CRUDO_IZQ = "av_raw_l"
+CLAVE_CRUDO_DER = "av_raw_r"
+PREFIJO_BANDA_IZQ = "band_l_"
+PREFIJO_BANDA_DER = "band_r_"
 
 CANALES = (
     ('MONO', "Mono", "Both channels mixed, as before"),
@@ -91,30 +91,30 @@ NOMBRE_MAT_LED = "AV_Material_Led"
 
 # Preset 2: plexus
 NOMBRE_PLEXUS = "AV_Plexus"
-NOMBRE_GN_PLEXUS = "AV_Plexus_Nodos"
+NOMBRE_GN_PLEXUS = "AV_Plexus_Nodes"
 NOMBRE_MAT_PLEXUS = "AV_Material_Plexus"
-SUFIJO_CARAS = "_Caras"
-NOMBRE_MAT_CARAS = "AV_Material_Caras"
+SUFIJO_CARAS = "_Faces"
+NOMBRE_MAT_CARAS = "AV_Material_Faces"
 
 # Preset: el compas visto en cubos
-PREFIJO_PULSO_VIS = "AV_Pulso"
-NOMBRE_MAT_PULSO = "AV_Material_Pulso"
+PREFIJO_PULSO_VIS = "AV_Beat"
+NOMBRE_MAT_PULSO = "AV_Material_Beat"
 
 # Preset 3: paisaje que avanza
-NOMBRE_PAISAJE = "AV_Paisaje"
-NOMBRE_MAT_PAISAJE = "AV_Material_Paisaje"
-CLAVE_FIRMA_PAISAJE = "av_paisaje_firma"
+NOMBRE_PAISAJE = "AV_Landscape"
+NOMBRE_MAT_PAISAJE = "AV_Material_Landscape"
+CLAVE_FIRMA_PAISAJE = "av_landscape_sig"
 
 # Preset 4: enjambre orbital
-NOMBRE_ENJAMBRE = "AV_Enjambre"
-NOMBRE_GN_ENJAMBRE = "AV_Enjambre_Nodos"
-NOMBRE_MAT_ENJAMBRE = "AV_Material_Enjambre"
-CLAVE_FIRMA_ENJAMBRE = "av_enjambre_firma"
-CLAVE_ENJ_RAD = "av_enj_rad"
-CLAVE_ENJ_RADN = "av_enj_radn"
-CLAVE_ENJ_ANG = "av_enj_ang"
-CLAVE_ENJ_ALT = "av_enj_alt"
-CLAVE_ENJ_BANDA = "av_enj_banda"
+NOMBRE_ENJAMBRE = "AV_Swarm"
+NOMBRE_GN_ENJAMBRE = "AV_Swarm_Nodes"
+NOMBRE_MAT_ENJAMBRE = "AV_Material_Swarm"
+CLAVE_FIRMA_ENJAMBRE = "av_swarm_sig"
+CLAVE_ENJ_RAD = "av_swarm_rad"
+CLAVE_ENJ_RADN = "av_swarm_radn"
+CLAVE_ENJ_ANG = "av_swarm_ang"
+CLAVE_ENJ_ALT = "av_swarm_alt"
+CLAVE_ENJ_BANDA = "av_swarm_band"
 
 
 # ---------------------------------------------------------------------------
@@ -411,7 +411,7 @@ def normalizar_db(db, rango_db, modo):
 # Encima van los pulsos del compas, si esta detectado. Si las marcas caen sobre
 # las columnas brillantes, el tempo esta bien; si se van separando, no.
 
-NOMBRE_IMAGEN = "AV_Analisis"
+NOMBRE_IMAGEN = "AV_Analysis"
 ANCHO_MAX_ESPECTRO = 2048
 
 # Rampa de espectrograma: negro -> azul -> cian -> amarillo -> blanco. La misma
@@ -884,10 +884,10 @@ def aplicar_suavizado(empty, ataque_seg, caida_seg, fps):
 # un error minusculo de BPM desplaza los ultimos golpes y se nota. Por eso se
 # puede afinar a decimas de BPM aunque cada fotograma dure 42 ms.
 
-CLAVE_PULSO = "pulso"
-CLAVE_FASE_PULSO = "fase_pulso"
-CLAVE_FASE_COMPAS = "fase_compas"
-CLAVE_NUM_PULSO = "numero_pulso"
+CLAVE_PULSO = "beat"
+CLAVE_FASE_PULSO = "beat_phase"
+CLAVE_FASE_COMPAS = "bar_phase"
+CLAVE_NUM_PULSO = "beat_number"
 CLAVES_COMPAS = (CLAVE_PULSO, CLAVE_FASE_PULSO, CLAVE_FASE_COMPAS, CLAVE_NUM_PULSO)
 RUTAS_COMPAS = tuple(f'["{c}"]' for c in CLAVES_COMPAS)
 PREFIJO_MARCADOR = "AV_"
@@ -1390,7 +1390,7 @@ def crear_material_led(etiqueta, brillo, apagado):
     # --- color segun la ALTURA del segmento: verde -> ambar -> rojo ---
     attr_nivel = nt.nodes.new("ShaderNodeAttribute")
     attr_nivel.attribute_type = 'OBJECT'
-    attr_nivel.attribute_name = "av_nivel"
+    attr_nivel.attribute_name = "av_level"
     attr_nivel.location = (-620, 160)
 
     rampa = nt.nodes.new("ShaderNodeValToRGB")
@@ -1810,7 +1810,7 @@ def puntos_de_modelo(plexus, n, semilla):
 
 CLAVE_CACHE_P0 = "av_cache_p0"
 CLAVE_CACHE_DIR = "av_cache_dir"
-CLAVE_CACHE_FIRMA = "av_cache_firma"
+CLAVE_CACHE_FIRMA = "av_cache_sig"
 
 
 def firma_disposicion(p):
@@ -1939,8 +1939,8 @@ def obtener_nodos_plexus():
     ng = bpy.data.node_groups.new(NOMBRE_GN_PLEXUS, "GeometryNodeTree")
     ng.interface.new_socket(name="Geometry", in_out='INPUT', socket_type='NodeSocketGeometry')
     ng.interface.new_socket(name="Geometry", in_out='OUTPUT', socket_type='NodeSocketGeometry')
-    ng.interface.new_socket(name="Grosor", in_out='INPUT', socket_type='NodeSocketFloat')
-    ng.interface.new_socket(name="Punto", in_out='INPUT', socket_type='NodeSocketFloat')
+    ng.interface.new_socket(name="Thickness", in_out='INPUT', socket_type='NodeSocketFloat')
+    ng.interface.new_socket(name="Point", in_out='INPUT', socket_type='NodeSocketFloat')
     ng.interface.new_socket(name="Material", in_out='INPUT', socket_type='NodeSocketMaterial')
 
     nodos = ng.nodes
@@ -1957,7 +1957,7 @@ def obtener_nodos_plexus():
 
     enlaces.new(entrada.outputs[0], a_curva.inputs["Mesh"])
     enlaces.new(a_curva.outputs["Curve"], a_malla.inputs["Curve"])
-    enlaces.new(entrada.outputs["Grosor"], perfil.inputs["Radius"])
+    enlaces.new(entrada.outputs["Thickness"], perfil.inputs["Radius"])
     enlaces.new(perfil.outputs["Curve"], a_malla.inputs["Profile Curve"])
     enlaces.new(a_malla.outputs["Mesh"], mat_tubos.inputs["Geometry"])
     enlaces.new(entrada.outputs["Material"], mat_tubos.inputs["Material"])
@@ -1968,7 +1968,7 @@ def obtener_nodos_plexus():
     mat_bolas = nodos.new("GeometryNodeSetMaterial"); mat_bolas.location = (-160, -230)
     instanciar = nodos.new("GeometryNodeInstanceOnPoints"); instanciar.location = (70, -230)
 
-    enlaces.new(entrada.outputs["Punto"], bola.inputs["Radius"])
+    enlaces.new(entrada.outputs["Point"], bola.inputs["Radius"])
     enlaces.new(bola.outputs["Mesh"], mat_bolas.inputs["Geometry"])
     enlaces.new(entrada.outputs["Material"], mat_bolas.inputs["Material"])
     enlaces.new(entrada.outputs[0], instanciar.inputs["Points"])
@@ -2004,7 +2004,7 @@ def aplicar_estilo_plexus(ob):
     if m is None:
         return
     p = ob.audioviz_plex
-    for nombre, valor in (("Grosor", p.grosor), ("Punto", p.tam_punto)):
+    for nombre, valor in (("Thickness", p.grosor), ("Point", p.tam_punto)):
         ident = identificador_entrada(m.node_group, nombre)
         if ident is not None:
             m[ident] = valor
@@ -2042,7 +2042,7 @@ def actualizar_material_plexus(ob):
     # que cada linea se degrada entre las dos bandas que une.
     attr = nt.nodes.new("ShaderNodeAttribute")
     attr.attribute_type = 'GEOMETRY'
-    attr.attribute_name = "av_nivel"
+    attr.attribute_name = "av_level"
     attr.location = (-620, 0)
 
     rampa = nt.nodes.new("ShaderNodeValToRGB")
@@ -2152,7 +2152,7 @@ def crear_material_caras(plexus):
     attr = nt.nodes.new("ShaderNodeAttribute")
     attr.name = "Atributo"
     attr.attribute_type = 'GEOMETRY'
-    attr.attribute_name = "av_intensidad"
+    attr.attribute_name = "av_intensity"
     attr.location = (-860, 60)
 
     rampa = nt.nodes.new("ShaderNodeValToRGB")
@@ -2268,8 +2268,8 @@ def escribir_caras(plexus, puntos, pares, niveles, intensidades):
     # Los mismos atributos que el plexus: al ser de dominio PUNTO, el shader los
     # interpola por la cara y cada triangulo recibe un degradado entre los
     # valores de sus tres vertices.
-    poner_atributo(me, "av_nivel", niveles)
-    poner_atributo(me, "av_intensidad", intensidades)
+    poner_atributo(me, "av_level", niveles)
+    poner_atributo(me, "av_intensity", intensidades)
     me.update()
     return len(tris)
 
@@ -2307,8 +2307,8 @@ MODOS_PAISAJE = (
 
 def es_paisaje(ob):
     return (ob is not None and ob.type == 'MESH'
-            and getattr(ob, "audioviz_paisaje", None) is not None
-            and ob.audioviz_paisaje.es_paisaje)
+            and getattr(ob, "audioviz_landscape", None) is not None
+            and ob.audioviz_landscape.es_paisaje)
 
 
 def paisajes_de_la_escena(escena):
@@ -2366,7 +2366,7 @@ def rejilla_paisaje(p):
 
 def construir_malla_paisaje(ob):
     """Rehace la topologia solo si ha cambiado: es lo unico caro que hay aqui."""
-    p = ob.audioviz_paisaje
+    p = ob.audioviz_landscape
     firma = firma_paisaje(p)
     me = ob.data
     total = columnas_totales(p)
@@ -2386,7 +2386,7 @@ def construir_malla_paisaje(ob):
     # av_nivel (donde cae en el espectro) y av_tiempo (como de viejo) son fijos:
     # dependen de la rejilla, no de la musica. Se escriben una sola vez.
     espectro = recorrido_espectro(p)
-    poner_atributo(me, "av_nivel",
+    poner_atributo(me, "av_level",
                    np.tile(espectro, filas).astype(np.float32))
     poner_atributo(me, "av_tiempo", V.ravel().astype(np.float32))
 
@@ -2398,7 +2398,7 @@ def actualizar_paisaje(escena, ob):
     """Recalcula las alturas del paisaje en el fotograma actual."""
     if not es_paisaje(ob) or np is None:
         return -1
-    p = ob.audioviz_paisaje
+    p = ob.audioviz_landscape
     fuente = p.fuente if es_fuente(p.fuente) else fuente_activa(escena)
     if fuente is None:
         return -1
@@ -2526,7 +2526,7 @@ def actualizar_paisaje(escena, ob):
 
     me = ob.data
     me.vertices.foreach_set("co", co.astype(np.float32).ravel())
-    poner_atributo(me, "av_intensidad", alturas.ravel().astype(np.float32))
+    poner_atributo(me, "av_intensity", alturas.ravel().astype(np.float32))
     me.update()
     return int(alturas.size)
 
@@ -2605,7 +2605,7 @@ def actualizar_material_paisaje(ob):
         return
     if mat.node_tree is None:
         mat.use_nodes = True
-    p = ob.audioviz_paisaje
+    p = ob.audioviz_landscape
 
     transparencias = (p.modo != 'SOLIDO') or p.desvanecer
     if hasattr(mat, "surface_render_method"):
@@ -2618,7 +2618,7 @@ def actualizar_material_paisaje(ob):
     # --- color segun la altura ---
     attr_int = nt.nodes.new("ShaderNodeAttribute")
     attr_int.attribute_type = 'GEOMETRY'
-    attr_int.attribute_name = "av_intensidad"
+    attr_int.attribute_name = "av_intensity"
     attr_int.location = (-1500, 320)
 
     rampa = nt.nodes.new("ShaderNodeValToRGB")
@@ -2640,7 +2640,7 @@ def actualizar_material_paisaje(ob):
 
     attr_nivel = nt.nodes.new("ShaderNodeAttribute")
     attr_nivel.attribute_type = 'GEOMETRY'
-    attr_nivel.attribute_name = "av_nivel"
+    attr_nivel.attribute_name = "av_level"
     attr_nivel.location = (-1500, 40)
     attr_tiempo = nt.nodes.new("ShaderNodeAttribute")
     attr_tiempo.attribute_type = 'GEOMETRY'
@@ -2736,7 +2736,7 @@ def _al_cambiar_color_paisaje(self, contexto):
 # la coincidencia media es del 100%, asi que la diferencia no se ve. Con
 # amplitudes muy grandes si cambia, y por eso el operador lo avisa.
 
-SUFIJO_HORNEADO = "_Horneado"
+SUFIJO_HORNEADO = "_Baked"
 
 
 def estabilidad_aristas(escena, ob, muestras=8):
@@ -2781,10 +2781,10 @@ def hornear_objeto(escena, ob, inicio, fin, progreso=None):
     if getattr(copia, "audioviz_plex", None) is not None:
         copia.audioviz_plex.es_plexus = False
         copia.audioviz_plex.objeto_caras = None
-    if getattr(copia, "audioviz_paisaje", None) is not None:
-        copia.audioviz_paisaje.es_paisaje = False
-    if getattr(copia, "audioviz_enj", None) is not None:
-        copia.audioviz_enj.es_enjambre = False
+    if getattr(copia, "audioviz_landscape", None) is not None:
+        copia.audioviz_landscape.es_paisaje = False
+    if getattr(copia, "audioviz_swarm", None) is not None:
+        copia.audioviz_swarm.es_enjambre = False
     for clave in (CLAVE_CACHE_P0, CLAVE_CACHE_DIR, CLAVE_CACHE_FIRMA,
                   CLAVE_FIRMA_PAISAJE, CLAVE_FIRMA_ENJAMBRE,
                   CLAVE_ENJ_RAD, CLAVE_ENJ_RADN, CLAVE_ENJ_ANG,
@@ -3009,8 +3009,8 @@ def reconstruir_plexus(escena, ob):
     # av_intensidad : CUANTO suena su banda en este fotograma (0..1). Cambia.
     niveles = np.clip(bandas / max(n_bandas - 1, 1), 0.0, 1.0).astype(np.float32).ravel()
     intensidades = np.clip(crudo, 0.0, 1.0).astype(np.float32).ravel()
-    poner_atributo(me, "av_nivel", niveles)
-    poner_atributo(me, "av_intensidad", intensidades)
+    poner_atributo(me, "av_level", niveles)
+    poner_atributo(me, "av_intensity", intensidades)
 
     me.update()
 
@@ -3057,8 +3057,8 @@ REPARTOS_ENJAMBRE = (
 
 def es_enjambre(ob):
     return (ob is not None and ob.type == 'MESH'
-            and getattr(ob, "audioviz_enj", None) is not None
-            and ob.audioviz_enj.es_enjambre)
+            and getattr(ob, "audioviz_swarm", None) is not None
+            and ob.audioviz_swarm.es_enjambre)
 
 
 def enjambres_de_la_escena(escena):
@@ -3081,7 +3081,7 @@ def disposicion_enjambre(ob, forzar=False):
       alt   altura (o coseno de la inclinacion, en la esfera)
       banda posicion dentro del espectro, en continuo (p.ej. 3.7)
     """
-    p = ob.audioviz_enj
+    p = ob.audioviz_swarm
     firma = firma_enjambre(p)
 
     if not forzar and ob.get(CLAVE_FIRMA_ENJAMBRE) == firma:
@@ -3249,7 +3249,7 @@ def reconstruir_enjambre(escena, ob):
     if not es_enjambre(ob) or np is None:
         return -1
 
-    p = ob.audioviz_enj
+    p = ob.audioviz_swarm
     empty = p.fuente if es_fuente(p.fuente) else fuente_activa(escena)
     if empty is None:
         return -1
@@ -3353,14 +3353,14 @@ def reconstruir_enjambre(escena, ob):
 
     # Los mismos nombres que en los otros presets, para que un material que
     # hayas montado para el plexus valga aqui tal cual.
-    poner_atributo(me, "av_nivel",
+    poner_atributo(me, "av_level",
                    np.clip(banda / max(n_bandas - 1, 1), 0.0, 1.0)
                    .astype(np.float32).ravel())
-    poner_atributo(me, "av_intensidad", np.clip(intens, 0.0, 1.0)
+    poner_atributo(me, "av_intensity", np.clip(intens, 0.0, 1.0)
                    .astype(np.float32).ravel())
     # Este es propio del enjambre: cuanto le esta dando la onda AHORA. Sirve
     # para que la onda no solo empuje, sino que ademas encienda por donde pasa.
-    poner_atributo(me, "av_golpe", np.clip(golpe, 0.0, 1.0)
+    poner_atributo(me, "av_beat", np.clip(golpe, 0.0, 1.0)
                    .astype(np.float32).ravel())
     me.update()
     return n
@@ -3379,8 +3379,8 @@ def obtener_nodos_enjambre():
     ng = bpy.data.node_groups.new(NOMBRE_GN_ENJAMBRE, "GeometryNodeTree")
     ng.interface.new_socket(name="Geometry", in_out='INPUT', socket_type='NodeSocketGeometry')
     ng.interface.new_socket(name="Geometry", in_out='OUTPUT', socket_type='NodeSocketGeometry')
-    ng.interface.new_socket(name="Tamano", in_out='INPUT', socket_type='NodeSocketFloat')
-    ng.interface.new_socket(name="Reaccion", in_out='INPUT', socket_type='NodeSocketFloat')
+    ng.interface.new_socket(name="Size", in_out='INPUT', socket_type='NodeSocketFloat')
+    ng.interface.new_socket(name="Reaction", in_out='INPUT', socket_type='NodeSocketFloat')
     ng.interface.new_socket(name="Material", in_out='INPUT', socket_type='NodeSocketMaterial')
 
     nodos, enlaces = ng.nodes, ng.links
@@ -3402,7 +3402,7 @@ def obtener_nodos_enjambre():
     # tamano = Tamano * (1 + Reaccion * intensidad)
     leer = nodos.new("GeometryNodeInputNamedAttribute"); leer.location = (-760, 240)
     leer.data_type = 'FLOAT'
-    leer.inputs["Name"].default_value = "av_intensidad"
+    leer.inputs["Name"].default_value = "av_intensity"
     m1 = nodos.new("ShaderNodeMath"); m1.location = (-540, 240)
     m1.operation = 'MULTIPLY'
     m2 = nodos.new("ShaderNodeMath"); m2.location = (-330, 240)
@@ -3411,10 +3411,10 @@ def obtener_nodos_enjambre():
     m3 = nodos.new("ShaderNodeMath"); m3.location = (-120, 240)
     m3.operation = 'MULTIPLY'
     enlaces.new(leer.outputs["Attribute"], m1.inputs[0])
-    enlaces.new(entrada.outputs["Reaccion"], m1.inputs[1])
+    enlaces.new(entrada.outputs["Reaction"], m1.inputs[1])
     enlaces.new(m1.outputs[0], m2.inputs[0])
     enlaces.new(m2.outputs[0], m3.inputs[0])
-    enlaces.new(entrada.outputs["Tamano"], m3.inputs[1])
+    enlaces.new(entrada.outputs["Size"], m3.inputs[1])
 
     instanciar = nodos.new("GeometryNodeInstanceOnPoints"); instanciar.location = (120, 0)
     enlaces.new(entrada.outputs[0], instanciar.inputs["Points"])
@@ -3436,8 +3436,8 @@ def aplicar_estilo_enjambre(ob):
     m = modificador_enjambre(ob)
     if m is None:
         return
-    p = ob.audioviz_enj
-    for nombre, valor in (("Tamano", p.tam_punto), ("Reaccion", p.reaccion_tam)):
+    p = ob.audioviz_swarm
+    for nombre, valor in (("Size", p.tam_punto), ("Reaction", p.reaccion_tam)):
         ident = identificador_entrada(m.node_group, nombre)
         if ident is not None:
             m[ident] = valor
@@ -3470,14 +3470,14 @@ def actualizar_material_enjambre(ob):
         return
     if mat.node_tree is None:
         mat.use_nodes = True
-    p = ob.audioviz_enj
+    p = ob.audioviz_swarm
 
     nt = mat.node_tree
     nt.nodes.clear()
 
     nivel = nt.nodes.new("ShaderNodeAttribute")
     nivel.attribute_type = 'INSTANCER'
-    nivel.attribute_name = "av_nivel"
+    nivel.attribute_name = "av_level"
     nivel.location = (-820, 120)
 
     rampa = nt.nodes.new("ShaderNodeValToRGB"); rampa.location = (-620, 120)
@@ -3489,12 +3489,12 @@ def actualizar_material_enjambre(ob):
 
     intens = nt.nodes.new("ShaderNodeAttribute")
     intens.attribute_type = 'INSTANCER'
-    intens.attribute_name = "av_intensidad"
+    intens.attribute_name = "av_intensity"
     intens.location = (-820, -120)
 
     golpe = nt.nodes.new("ShaderNodeAttribute")
     golpe.attribute_type = 'INSTANCER'
-    golpe.attribute_name = "av_golpe"
+    golpe.attribute_name = "av_beat"
     golpe.location = (-820, -300)
 
     # brillo = ((intensidad + golpe*destello) + fondo) * brillo
@@ -5030,8 +5030,8 @@ class AV_OT_crear_led(Operator):
                 col.objects.link(ob)
 
                 # Altura del segmento dentro de la columna: fija, da el color.
-                ob["av_nivel"] = j / max(n_seg - 1, 1)
-                ob.id_properties_ui("av_nivel").update(min=0.0, max=1.0)
+                ob["av_level"] = j / max(n_seg - 1, 1)
+                ob.id_properties_ui("av_level").update(min=0.0, max=1.0)
 
                 # Encendido: driver contra la banda, y el pulso empuja hacia
                 # arriba para que en cada golpe se enciendan segmentos de mas.
@@ -5126,7 +5126,7 @@ class AV_OT_crear_enjambre(Operator):
         modif = ob.modifiers.new("AV_Enjambre", 'NODES')
         modif.node_group = obtener_nodos_enjambre()
 
-        p = ob.audioviz_enj
+        p = ob.audioviz_swarm
         p.es_enjambre = True
         p.fuente = empty
         p.semilla = len(existentes) * 23 % 10000
@@ -5219,7 +5219,7 @@ class AV_OT_crear_paisaje(Operator):
         ob.parent = fuente
         ob.matrix_parent_inverse = fuente.matrix_world.inverted()
 
-        p = ob.audioviz_paisaje
+        p = ob.audioviz_landscape
         p.es_paisaje = True
         p.fuente = fuente
         n_bandas = int(fuente.get(CLAVE_BANDAS, 8))
@@ -5947,7 +5947,7 @@ class AV_PT_paisaje(AV_PT_base_preset, Panel):
                                  icon='MESH_GRID').nombre = o.name
             return
 
-        p = ob.audioviz_paisaje
+        p = ob.audioviz_landscape
         caja = d.box()
         fila = caja.row()
         fila.label(text=ob.name, icon='MESH_GRID')
@@ -6065,7 +6065,7 @@ class AV_PT_enjambre(AV_PT_base_preset, Panel):
                                  icon='OUTLINER_OB_MESH').nombre = o.name
             return
 
-        p = ob.audioviz_enj
+        p = ob.audioviz_swarm
         fuente = p.fuente if es_fuente(p.fuente) else fuente_activa(contexto.scene)
 
         caja = d.box()
@@ -6180,14 +6180,14 @@ class AV_PT_atributos(Panel):
 
         caja = d.box()
         col = caja.column(align=True)
-        col.label(text="av_nivel", icon='RNA')
+        col.label(text="av_level", icon='RNA')
         col.label(text="    0 = lows · 1 = highs")
         col.label(text="    Where the point sits in the spectrum.")
         col.label(text="    Fixed: it does not change with the music.")
 
         caja = d.box()
         col = caja.column(align=True)
-        col.label(text="av_intensidad", icon='RNA')
+        col.label(text="av_intensity", icon='RNA')
         col.label(text="    0 = quiet · 1 = full")
         col.label(text="    How loud its band is on this frame.")
         col.label(text="    This is the one that reacts.")
@@ -6305,8 +6305,8 @@ def register():
     # OBJETO y no a la escena: es lo que permite tener varias a la vez.
     bpy.types.Object.audioviz_audio = PointerProperty(type=AV_AudioAjustes)
     bpy.types.Object.audioviz_plex = PointerProperty(type=AV_PlexusAjustes)
-    bpy.types.Object.audioviz_paisaje = PointerProperty(type=AV_PaisajeAjustes)
-    bpy.types.Object.audioviz_enj = PointerProperty(type=AV_EnjambreAjustes)
+    bpy.types.Object.audioviz_landscape = PointerProperty(type=AV_PaisajeAjustes)
+    bpy.types.Object.audioviz_swarm = PointerProperty(type=AV_EnjambreAjustes)
     _quitar_handler()
     bpy.app.handlers.frame_change_pre.append(_al_cambiar_fotograma)
     bpy.app.handlers.load_post.append(_al_abrir_archivo)
@@ -6318,8 +6318,8 @@ def register():
 def unregister():
     _quitar_traducciones()
     _quitar_handler()
-    del bpy.types.Object.audioviz_enj
-    del bpy.types.Object.audioviz_paisaje
+    del bpy.types.Object.audioviz_swarm
+    del bpy.types.Object.audioviz_landscape
     del bpy.types.Object.audioviz_plex
     del bpy.types.Object.audioviz_audio
     del bpy.types.Scene.audioviz
