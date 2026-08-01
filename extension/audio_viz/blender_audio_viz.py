@@ -105,6 +105,11 @@ NOMBRE_PAISAJE = "AV_Landscape"
 NOMBRE_MAT_PAISAJE = "AV_Material_Landscape"
 CLAVE_FIRMA_PAISAJE = "av_landscape_sig"
 
+# Preset 5: cuerdas
+NOMBRE_CUERDAS = "AV_Strings"
+NOMBRE_GN_CUERDAS = "AV_Strings_Nodes"
+NOMBRE_MAT_CUERDAS = "AV_Material_Strings"
+
 # Preset 4: enjambre orbital
 NOMBRE_ENJAMBRE = "AV_Swarm"
 NOMBRE_GN_ENJAMBRE = "AV_Swarm_Nodes"
@@ -3528,6 +3533,288 @@ def actualizar_material_enjambre(ob):
     return mat
 
 
+# ---------------------------------------------------------------------------
+# PRESET 5: CUERDAS
+# ---------------------------------------------------------------------------
+# Una cuerda por banda, hasta 32, sujetas por los dos extremos y vibrando como
+# las de una guitarra. Cuanto suena su banda, mas se abre la cuerda.
+#
+# LA FISICA, QUE AQUI SI SALE GRATIS: una cuerda sujeta por las puntas vibra en
+# MODOS. El fundamental es medio seno de punta a punta; el armonico i tiene i
+# vientres y va i veces mas rapido. Sumando unos pocos con peso 1/i sale el
+# latigazo caracteristico, y los extremos se quedan clavados en cero solos, sin
+# tener que forzarlos.
+#
+# Y como una cuerda pulsada es un oscilador amortiguado -suena y se apaga-, la
+# envolvente se saca con la MISMA convolucion que la inercia del enjambre. Por
+# eso esto tampoco necesita simular: el fotograma 4000 se calcula solo.
+#
+# OJO CON EL PARPADEO: a 24 fps, por encima de unos 6 Hz una vibracion deja de
+# leerse como movimiento y se ve como ruido. El armonico 3 va al triple que el
+# fundamental, asi que la frecuencia se acota por dentro (ver `frecuencias_cuerdas`).
+
+DISPOSICIONES_CUERDAS = (
+    ('PLANO', "Flat", "All the strings on one plane, like a guitar neck"),
+    ('ARCO', "Arc", "Fanned out on an arc, like a harp"),
+    ('CILINDRO', "Cylinder", "Wrapped around a circle; the camera can go inside"),
+)
+
+PLANOS_CUERDAS = (
+    ('VERTICAL', "Vertical", "Each string swings up and down only"),
+    ('CIRCULAR', "Circular", "It also swings sideways, whipping in a spiral"),
+)
+
+
+def es_cuerdas(ob):
+    return (ob is not None and ob.type == 'MESH'
+            and getattr(ob, "audioviz_strings", None) is not None
+            and ob.audioviz_strings.es_cuerdas)
+
+
+def cuerdas_de_la_escena(escena):
+    return [o for o in escena.objects if es_cuerdas(o)]
+
+
+def frecuencias_cuerdas(c, n):
+    """Hz visibles de cada cuerda, de grave a agudo y sin llegar al parpadeo.
+
+    Las cuerdas graves vibran mas despacio, como las gordas de una guitarra, y
+    el reparto es geometrico (por octavas) porque asi es como funciona el tono.
+
+    El tope no es un capricho: por debajo de cuatro fotogramas por ciclo el ojo
+    ya no ve una cuerda vibrando sino un temblor sucio, y el armonico mas alto
+    va tantas veces mas rapido como su numero.
+    """
+    k = np.arange(n) / max(n - 1, 1)
+    frec = c.frec_base * (2.0 ** (k * c.octavas))
+    return np.minimum(frec, tope_sin_parpadeo(c))
+
+
+def tope_sin_parpadeo(c):
+    """Frecuencia mas alta que se puede pedir sin que se vea como ruido.
+
+    El limite util son unos cuatro fotogramas por ciclo. Lo que no se puede es
+    acotar por el armonico mas alto: ese pesa 1/i, apenas se ve, y acotando por
+    el se estrangula todo lo demas (con 3 armonicos el reparto por octavas se
+    quedaba en nada). Lo que manda es el armonico MEDIO PONDERADO por amplitud,
+    que con pesos 1/i sale n / (1 + 1/2 + ... + 1/n).
+    """
+    n_arm = max(int(c.armonicos), 1)
+    armonico_medio = n_arm / sum(1.0 / i for i in range(1, n_arm + 1))
+    return c.fps_ref / 4.0 / armonico_medio
+
+
+def reconstruir_cuerdas(escena, ob):
+    """Recoloca los puntos de UNAS cuerdas. Devuelve cuantas hay."""
+    if not es_cuerdas(ob) or np is None:
+        return -1
+
+    c = ob.audioviz_strings
+    empty = c.fuente if es_fuente(c.fuente) else fuente_activa(escena)
+    if empty is None:
+        return -1
+
+    n_bandas = int(empty.get(CLAVE_BANDAS, 8))
+    b0 = max(0, min(int(c.banda_min), n_bandas - 1))
+    b1 = max(b0, min(int(c.banda_max), n_bandas - 1))
+    bandas = np.arange(b0, b1 + 1)
+    n = len(bandas)
+    seg = max(int(c.segmentos), 3)
+
+    fps = float(empty.audioviz_audio.fps) or float(escena.render.fps)
+    t = (escena.frame_current - escena.frame_start) / max(fps, 1e-6)
+
+    # --- cuanto se abre cada cuerda ---
+    v_uno, v_dos = valores_por_canal(empty, escena.frame_current, n_bandas, c.canal)
+    directo = np.asarray(v_uno, dtype=float)[bandas]
+    if v_dos is not None:
+        # En estereo, las cuerdas de la mitad izquierda siguen al canal izquierdo.
+        peso = np.linspace(0.0, 1.0, n)
+        directo = directo * (1.0 - peso) + np.asarray(v_dos, dtype=float)[bandas] * peso
+
+    amplitud = directo
+    if c.resonancia > 0.0:
+        # La cuerda pulsada: suena en el golpe y se va apagando. Es la misma
+        # convolucion que la inercia del enjambre, con otro nombre.
+        f_uno, f_dos = fuerzas_inerciales(empty, escena, n_bandas, c.canal,
+                                          c.duracion, 0.0, fps)
+        sonando = np.asarray(f_uno, dtype=float)[bandas]
+        if f_dos is not None:
+            peso = np.linspace(0.0, 1.0, n)
+            sonando = sonando * (1.0 - peso) + np.asarray(f_dos, dtype=float)[bandas] * peso
+        amplitud = directo * (1.0 - c.resonancia) + sonando * c.resonancia
+    amplitud = np.clip(amplitud, 0.0, None) * c.amplitud
+
+    # --- la forma de la vibracion ---
+    u = np.linspace(0.0, 1.0, seg)
+    n_arm = max(int(c.armonicos), 1)
+    modos = np.stack([np.sin(i * np.pi * u) / i for i in range(1, n_arm + 1)])
+
+    frec = frecuencias_cuerdas(c, n)
+    rng = np.random.default_rng(int(c.semilla))
+    fases = rng.random(n) * 2.0 * np.pi     # que no arranquen todas a la vez
+
+    armonicos = np.arange(1, n_arm + 1)[None, :]
+    ang = 2.0 * np.pi * frec[:, None] * armonicos * t + fases[:, None]
+    desp = (np.cos(ang) @ modos) * amplitud[:, None]
+
+    # --- colocarlas en el espacio ---
+    pos = np.zeros((n, seg, 3))
+    largo = c.largo
+    if c.disposicion == 'CILINDRO':
+        # Cada cuerda es una generatriz del cilindro y vibra hacia el eje.
+        theta = np.linspace(0.0, 2.0 * np.pi, n, endpoint=False)
+        radio = c.separacion * n / (2.0 * np.pi)
+        pos[:, :, 0] = u[None, :] * largo - largo / 2.0
+        pos[:, :, 1] = (radio + desp) * np.sin(theta)[:, None]
+        pos[:, :, 2] = (radio + desp) * np.cos(theta)[:, None]
+    else:
+        if c.disposicion == 'ARCO':
+            # Abanico: cada cuerda gira un poco sobre el centro, como un arpa.
+            giro = np.linspace(-c.abanico, c.abanico, n) if n > 1 else np.zeros(1)
+            pos[:, :, 0] = (u[None, :] - 0.5) * largo * np.cos(giro)[:, None]
+            pos[:, :, 1] = np.arange(n)[:, None] * c.separacion \
+                + (u[None, :] - 0.5) * largo * np.sin(giro)[:, None]
+        else:
+            pos[:, :, 0] = (u[None, :] - 0.5) * largo
+            pos[:, :, 1] = np.arange(n)[:, None] * c.separacion
+        pos[:, :, 2] = desp
+        if c.plano == 'CIRCULAR':
+            # Un desfase de un cuarto de vuelta convierte el vaiven en un giro.
+            lateral = (np.cos(ang + np.pi / 2.0) @ modos) * amplitud[:, None]
+            pos[:, :, 1] = pos[:, :, 1] + lateral
+    pos[:, :, 1] -= pos[:, :, 1].mean()
+
+    # --- a la malla ---
+    me = ob.data
+    me.clear_geometry()
+    me.vertices.add(n * seg)
+    me.vertices.foreach_set("co", pos.astype(np.float32).ravel())
+    # Una tira de aristas por cuerda, sin unir una cuerda con la siguiente.
+    base = (np.arange(n) * seg)[:, None] + np.arange(seg - 1)[None, :]
+    aristas = np.stack([base, base + 1], axis=-1).reshape(-1, 2)
+    me.edges.add(len(aristas))
+    me.edges.foreach_set("vertices", aristas.astype(np.int32).ravel())
+
+    nivel = np.repeat(np.clip(bandas / max(n_bandas - 1, 1), 0.0, 1.0), seg)
+    intens = np.repeat(np.clip(directo, 0.0, 1.0), seg)
+    poner_atributo(me, "av_level", nivel.astype(np.float32))
+    poner_atributo(me, "av_intensity", intens.astype(np.float32))
+    me.update()
+    return n
+
+
+def obtener_nodos_cuerdas():
+    """Convierte las tiras de aristas en tubos. Un solo grupo compartido."""
+    ng = bpy.data.node_groups.get(NOMBRE_GN_CUERDAS)
+    if ng is not None:
+        return ng
+
+    ng = bpy.data.node_groups.new(NOMBRE_GN_CUERDAS, "GeometryNodeTree")
+    ng.interface.new_socket(name="Geometry", in_out='INPUT', socket_type='NodeSocketGeometry')
+    ng.interface.new_socket(name="Geometry", in_out='OUTPUT', socket_type='NodeSocketGeometry')
+    ng.interface.new_socket(name="Thickness", in_out='INPUT', socket_type='NodeSocketFloat')
+    ng.interface.new_socket(name="Material", in_out='INPUT', socket_type='NodeSocketMaterial')
+
+    nodos, enlaces = ng.nodes, ng.links
+    entrada = nodos.new("NodeGroupInput"); entrada.location = (-620, 0)
+    salida = nodos.new("NodeGroupOutput"); salida.location = (320, 0)
+    a_curva = nodos.new("GeometryNodeMeshToCurve"); a_curva.location = (-400, 80)
+    perfil = nodos.new("GeometryNodeCurvePrimitiveCircle"); perfil.location = (-400, -140)
+    perfil.inputs["Resolution"].default_value = 6
+    a_malla = nodos.new("GeometryNodeCurveToMesh"); a_malla.location = (-170, 80)
+    suave = nodos.new("GeometryNodeSetShadeSmooth"); suave.location = (10, 80)
+    mat = nodos.new("GeometryNodeSetMaterial"); mat.location = (170, 80)
+
+    enlaces.new(entrada.outputs[0], a_curva.inputs["Mesh"])
+    enlaces.new(entrada.outputs["Thickness"], perfil.inputs["Radius"])
+    enlaces.new(a_curva.outputs["Curve"], a_malla.inputs["Curve"])
+    enlaces.new(perfil.outputs["Curve"], a_malla.inputs["Profile Curve"])
+    enlaces.new(a_malla.outputs["Mesh"], suave.inputs["Geometry"])
+    enlaces.new(suave.outputs["Geometry"], mat.inputs["Geometry"])
+    enlaces.new(entrada.outputs["Material"], mat.inputs["Material"])
+    enlaces.new(mat.outputs["Geometry"], salida.inputs[0])
+    return ng
+
+
+def modificador_cuerdas(ob):
+    for m in ob.modifiers:
+        if m.type == 'NODES' and m.node_group is not None \
+                and m.node_group.name == NOMBRE_GN_CUERDAS:
+            return m
+    return None
+
+
+def aplicar_estilo_cuerdas(ob):
+    m = modificador_cuerdas(ob)
+    if m is None:
+        return
+    ident = identificador_entrada(m.node_group, "Thickness")
+    if ident is not None:
+        m[ident] = ob.audioviz_strings.grosor
+    ob.update_tag()
+
+
+def material_de_cuerdas(ob, crear=False):
+    m = modificador_cuerdas(ob)
+    if m is None:
+        return None
+    ident = identificador_entrada(m.node_group, "Material")
+    if ident is None:
+        return None
+    mat = m[ident]
+    if mat is None and crear:
+        mat = bpy.data.materials.new(NOMBRE_MAT_CUERDAS)
+        m[ident] = mat
+    return mat
+
+
+def actualizar_material_cuerdas(ob):
+    """Color por banda, brillo por lo que suena. Como el plexus."""
+    mat = material_de_cuerdas(ob, crear=True)
+    if mat is None:
+        return
+    if mat.node_tree is None:
+        mat.use_nodes = True
+    c = ob.audioviz_strings
+
+    nt = mat.node_tree
+    nt.nodes.clear()
+    nivel = nt.nodes.new("ShaderNodeAttribute")
+    nivel.attribute_type = 'GEOMETRY'
+    nivel.attribute_name = "av_level"
+    nivel.location = (-820, 120)
+    rampa = nt.nodes.new("ShaderNodeValToRGB"); rampa.location = (-620, 120)
+    rampa.color_ramp.elements[0].position = 0.0
+    rampa.color_ramp.elements[0].color = (*c.color_grave, 1.0)
+    rampa.color_ramp.elements[1].position = 1.0
+    rampa.color_ramp.elements[1].color = (*c.color_agudo, 1.0)
+    rampa.color_ramp.elements.new(0.5).color = (*c.color_medio, 1.0)
+
+    intens = nt.nodes.new("ShaderNodeAttribute")
+    intens.attribute_type = 'GEOMETRY'
+    intens.attribute_name = "av_intensity"
+    intens.location = (-820, -140)
+    suma = nt.nodes.new("ShaderNodeMath"); suma.location = (-620, -140)
+    suma.operation = 'ADD'
+    suma.inputs[1].default_value = c.fondo
+    mult = nt.nodes.new("ShaderNodeMath"); mult.location = (-430, -140)
+    mult.operation = 'MULTIPLY'
+    mult.inputs[1].default_value = c.brillo
+
+    emision = nt.nodes.new("ShaderNodeEmission"); emision.location = (-200, 0)
+    emision.name = "Emision"
+    salida = nt.nodes.new("ShaderNodeOutputMaterial"); salida.location = (10, 0)
+
+    nt.links.new(nivel.outputs["Factor"], rampa.inputs["Fac"])
+    nt.links.new(rampa.outputs["Color"], emision.inputs["Color"])
+    nt.links.new(intens.outputs["Factor"], suma.inputs[0])
+    nt.links.new(suma.outputs[0], mult.inputs[0])
+    nt.links.new(mult.outputs[0], emision.inputs["Strength"])
+    nt.links.new(emision.outputs["Emission"], salida.inputs["Surface"])
+    return mat
+
+
 # Mientras se renderiza no sirve mirar si algo se ve en el viewport: un objeto
 # puede estar oculto ahi y salir en el render igualmente. Estos dos handlers
 # llevan la cuenta de en que estamos.
@@ -3587,6 +3874,14 @@ def _al_cambiar_fotograma(escena, dg=None):
             continue
         try:
             reconstruir_enjambre(escena, ob)
+        except Exception as e:
+            print(f"Audio Viz: fallo al recolocar {ob.name}: {e}")
+
+    for ob in cuerdas_de_la_escena(escena):
+        if not hace_falta_actualizar(ob):
+            continue
+        try:
+            reconstruir_cuerdas(escena, ob)
         except Exception as e:
             print(f"Audio Viz: fallo al recolocar {ob.name}: {e}")
 
@@ -3679,6 +3974,24 @@ def _al_cambiar_color_enjambre(self, contexto):
     ob = self.id_data
     if es_enjambre(ob):
         actualizar_material_enjambre(ob)
+
+
+def _al_cambiar_cuerdas(self, contexto):
+    ob = self.id_data
+    if es_cuerdas(ob):
+        reconstruir_cuerdas(contexto.scene, ob)
+
+
+def _al_cambiar_estilo_cuerdas(self, contexto):
+    ob = self.id_data
+    if es_cuerdas(ob):
+        aplicar_estilo_cuerdas(ob)
+
+
+def _al_cambiar_color_cuerdas(self, contexto):
+    ob = self.id_data
+    if es_cuerdas(ob):
+        actualizar_material_cuerdas(ob)
 
 
 def _poll_modelo(self, ob):
@@ -4103,6 +4416,112 @@ class AV_PaisajeAjustes(PropertyGroup):
         name="How much it fades",
         description="How much of the back fades out, from 0 to 1",
         default=0.4, min=0.0, max=1.0, update=_al_cambiar_color_paisaje,
+    )
+
+
+class AV_CuerdasAjustes(PropertyGroup):
+    """Configuracion de UNAS cuerdas, pegada al objeto como las demas."""
+
+    es_cuerdas: BoolProperty(default=False)
+
+    fuente: PointerProperty(
+        name="Audio", description="Which audio source drives these strings",
+        type=bpy.types.Object, poll=_poll_fuente, update=_al_cambiar_cuerdas,
+    )
+
+    banda_min: IntProperty(name="Band from", default=0, min=0, max=31,
+                           update=_al_cambiar_cuerdas)
+    banda_max: IntProperty(name="Band to", default=7, min=0, max=31,
+                           update=_al_cambiar_cuerdas)
+    segmentos: IntProperty(
+        name="Segments",
+        description="Points along each string. Below about 32 the wave shows its "
+                    "corners; above 200 it costs more and looks the same",
+        default=96, min=3, soft_max=256, max=1024, update=_al_cambiar_cuerdas,
+    )
+    largo: FloatProperty(name="Length", default=10.0, min=0.01, soft_max=100.0,
+                         unit='LENGTH', update=_al_cambiar_cuerdas)
+    separacion: FloatProperty(name="Spacing", default=0.45, min=0.0, soft_max=10.0,
+                              unit='LENGTH', update=_al_cambiar_cuerdas)
+    disposicion: EnumProperty(name="Layout", items=DISPOSICIONES_CUERDAS,
+                              default='PLANO', update=_al_cambiar_cuerdas)
+    abanico: FloatProperty(
+        name="Fan",
+        description="How much the strings splay out on the arc layout",
+        default=0.25, min=0.0, max=1.5, subtype='ANGLE',
+        update=_al_cambiar_cuerdas,
+    )
+
+    amplitud: FloatProperty(
+        name="Amplitude",
+        description="How wide a string opens when its band is at full",
+        default=0.6, min=0.0, soft_max=10.0, unit='LENGTH',
+        update=_al_cambiar_cuerdas,
+    )
+    resonancia: FloatProperty(
+        name="Ring",
+        description="At 0 the string follows the audio exactly, and goes still the "
+                    "instant it stops. Raising it, the string keeps ringing after "
+                    "the hit and fades out, which is what a plucked string does",
+        default=0.7, min=0.0, max=1.0, update=_al_cambiar_cuerdas,
+    )
+    duracion: FloatProperty(
+        name="Ring time",
+        description="How long a string keeps sounding after being plucked",
+        default=0.8, min=0.02, soft_max=5.0, subtype='TIME_ABSOLUTE', unit='TIME',
+        update=_al_cambiar_cuerdas,
+    )
+    armonicos: IntProperty(
+        name="Harmonics",
+        description="1 is a clean arc from end to end. Adding harmonics puts extra "
+                    "bellies in the string and gives it the whip of a real one",
+        default=3, min=1, max=8, update=_al_cambiar_cuerdas,
+    )
+    frec_base: FloatProperty(
+        name="Lowest string (Hz)",
+        description="How fast the thickest string wobbles. It gets capped so it "
+                    "never crosses into flicker: below four frames per cycle the "
+                    "eye stops reading movement and sees noise",
+        default=1.6, min=0.05, soft_max=8.0, update=_al_cambiar_cuerdas,
+    )
+    octavas: FloatProperty(
+        name="Octaves up",
+        description="How much faster the thinnest string wobbles than the thickest, "
+                    "in octaves. 2 means four times faster",
+        default=2.0, min=0.0, soft_max=5.0, update=_al_cambiar_cuerdas,
+    )
+    plano: EnumProperty(name="Swing", items=PLANOS_CUERDAS, default='VERTICAL',
+                        update=_al_cambiar_cuerdas)
+    canal: EnumProperty(name="Channel", items=CANALES, default='MONO',
+                        update=_al_cambiar_cuerdas)
+    semilla: IntProperty(name="Seed", default=0, min=0, max=9999,
+                         update=_al_cambiar_cuerdas)
+    fps_ref: FloatProperty(
+        name="Playback FPS",
+        description="Used only to work out where flicker starts. Leave it at your "
+                    "scene's frame rate",
+        default=24.0, min=1.0, soft_max=120.0, update=_al_cambiar_cuerdas,
+    )
+
+    grosor: FloatProperty(name="Thickness", default=0.02, min=0.0001, soft_max=0.5,
+                          precision=4, unit='LENGTH',
+                          update=_al_cambiar_estilo_cuerdas)
+    color_grave: FloatVectorProperty(name="Lows", subtype='COLOR', size=3,
+                                     default=(1.0, 0.35, 0.1), min=0.0, max=1.0,
+                                     update=_al_cambiar_color_cuerdas)
+    color_medio: FloatVectorProperty(name="Mids", subtype='COLOR', size=3,
+                                     default=(1.0, 0.9, 0.3), min=0.0, max=1.0,
+                                     update=_al_cambiar_color_cuerdas)
+    color_agudo: FloatVectorProperty(name="Highs", subtype='COLOR', size=3,
+                                     default=(0.4, 0.9, 1.0), min=0.0, max=1.0,
+                                     update=_al_cambiar_color_cuerdas)
+    brillo: FloatProperty(name="Brightness", default=2.0, min=0.0, soft_max=20.0,
+                          update=_al_cambiar_color_cuerdas)
+    fondo: FloatProperty(
+        name="Brightness floor",
+        description="What the silent strings glow. At 0 they vanish and you only "
+                    "see what sounds",
+        default=0.12, min=0.0, max=1.0, update=_al_cambiar_color_cuerdas,
     )
 
 
@@ -5149,6 +5568,56 @@ class AV_OT_crear_enjambre(Operator):
         return {'FINISHED'}
 
 
+class AV_OT_crear_cuerdas(Operator):
+    bl_idname = "audioviz.crear_cuerdas"
+    bl_label = "Create strings"
+    bl_description = ("One string per band, held at both ends and vibrating like a "
+                      "guitar's. The louder its band, the wider it opens")
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, contexto):
+        if np is None:
+            self.report({'ERROR'}, "This preset needs numpy and it is not available")
+            return {'CANCELLED'}
+        empty = fuente_activa(contexto.scene)
+        if empty is None:
+            self.report({'ERROR'}, "Import an audio file first")
+            return {'CANCELLED'}
+
+        col = obtener_coleccion(contexto.scene)
+        existentes = cuerdas_de_la_escena(contexto.scene)
+
+        me = bpy.data.meshes.new(NOMBRE_CUERDAS)
+        ob = bpy.data.objects.new(NOMBRE_CUERDAS, me)
+        col.objects.link(ob)
+        ob.parent = empty
+        ob.matrix_parent_inverse = empty.matrix_world.inverted()
+
+        modif = ob.modifiers.new("AV_Strings", 'NODES')
+        modif.node_group = obtener_nodos_cuerdas()
+
+        c = ob.audioviz_strings
+        c.es_cuerdas = True
+        c.fuente = empty
+        c.semilla = len(existentes) * 31 % 10000
+        # Una cuerda por banda del audio, no solo las 8 de por defecto.
+        c.banda_max = max(int(empty.get(CLAVE_BANDAS, 8)) - 1, 0)
+        c.fps_ref = float(empty.audioviz_audio.fps) or float(contexto.scene.render.fps)
+
+        actualizar_material_cuerdas(ob)
+        aplicar_estilo_cuerdas(ob)
+        n = reconstruir_cuerdas(contexto.scene, ob)
+
+        for o in contexto.selected_objects:
+            o.select_set(False)
+        ob.select_set(True)
+        contexto.view_layer.objects.active = ob
+
+        self.report({'INFO'}, f"'{ob.name}' listening to '{empty.name}' "
+                              f"({n} strings)")
+        return {'FINISHED'}
+
+
 class AV_OT_crear_pulso(Operator):
     bl_idname = "audioviz.crear_pulso"
     bl_label = "Create beat cubes"
@@ -5256,8 +5725,8 @@ class AV_OT_hornear(Operator):
     def execute(self, contexto):
         escena = contexto.scene
         ob = contexto.object
-        if not (es_plexus(ob) or es_paisaje(ob) or es_enjambre(ob)):
-            self.report({'ERROR'}, "Select a plexus, a landscape or a swarm")
+        if not (es_plexus(ob) or es_paisaje(ob) or es_enjambre(ob) or es_cuerdas(ob)):
+            self.report({'ERROR'}, "Select a plexus, a landscape, a swarm or strings")
             return {'CANCELLED'}
 
         inicio = escena.frame_start if self.todo_el_rango else escena.frame_current
@@ -5441,14 +5910,14 @@ class AV_OT_limpiar(Operator):
             if mat.users == 0 and mat.name.startswith(
                     (PREFIJO_MATERIAL, NOMBRE_MAT_LED, NOMBRE_MAT_PLEXUS,
                      NOMBRE_MAT_CARAS, NOMBRE_MAT_PAISAJE, NOMBRE_MAT_PULSO,
-                     NOMBRE_MAT_ENJAMBRE)):
+                     NOMBRE_MAT_ENJAMBRE, NOMBRE_MAT_CUERDAS)):
                 bpy.data.materials.remove(mat)
 
         for me in list(bpy.data.meshes):
             if me.users == 0 and me.name.startswith(PREFIJO_LED):
                 bpy.data.meshes.remove(me)
 
-        for nombre in (NOMBRE_GN_PLEXUS, NOMBRE_GN_ENJAMBRE):
+        for nombre in (NOMBRE_GN_PLEXUS, NOMBRE_GN_ENJAMBRE, NOMBRE_GN_CUERDAS):
             ng = bpy.data.node_groups.get(nombre)
             if ng is not None and ng.users == 0:
                 bpy.data.node_groups.remove(ng)
@@ -6163,6 +6632,96 @@ class AV_PT_enjambre(AV_PT_base_preset, Panel):
         caja.operator("audioviz.hornear", icon='FILE_TICK')
 
 
+class AV_PT_cuerdas(AV_PT_base_preset, Panel):
+    bl_label = "Preset: strings"
+    bl_idname = "AV_PT_cuerdas"
+
+    def draw(self, contexto):
+        d = self.layout
+        if np is None:
+            d.label(text="Needs numpy and it is not available", icon='ERROR')
+            return
+
+        d.operator("audioviz.crear_cuerdas", text="Add strings", icon='PLUS')
+
+        lista = cuerdas_de_la_escena(contexto.scene)
+        ob = contexto.object
+        if not es_cuerdas(ob):
+            if lista:
+                caja = d.box()
+                caja.label(text="Choose which one to edit:", icon='INFO')
+                col = caja.column(align=True)
+                for o in lista:
+                    col.operator("audioviz.seleccionar_plexus", text=o.name,
+                                 icon='OUTLINER_OB_MESH').nombre = o.name
+            return
+
+        c = ob.audioviz_strings
+        fuente = c.fuente if es_fuente(c.fuente) else fuente_activa(contexto.scene)
+
+        caja = d.box()
+        fila = caja.row()
+        fila.label(text=ob.name, icon='OUTLINER_OB_MESH')
+        fila.label(text=f"{len(lista)} in the scene")
+
+        col = caja.column(align=True)
+        col.prop(c, "fuente", text="Audio")
+        if not es_fuente(c.fuente):
+            col.label(text="No audio of its own: uses the active one", icon='INFO')
+
+        col = caja.column(align=True)
+        col.label(text="Which strings:")
+        selector_canal(col, c, "canal", fuente)
+        fila = col.row(align=True)
+        fila.prop(c, "banda_min", text="From")
+        fila.prop(c, "banda_max", text="to")
+        col.label(text=f"{max(c.banda_max - c.banda_min + 1, 1)} strings", icon='DOT')
+
+        col = caja.column(align=True)
+        col.label(text="Layout:")
+        col.prop(c, "disposicion")
+        if c.disposicion == 'ARCO':
+            col.prop(c, "abanico")
+        col.prop(c, "largo")
+        col.prop(c, "separacion")
+        col.prop(c, "segmentos")
+
+        col = caja.column(align=True)
+        col.label(text="Vibration:")
+        col.prop(c, "amplitud")
+        col.prop(c, "resonancia", slider=True)
+        sub = col.row()
+        sub.enabled = c.resonancia > 0.0
+        sub.prop(c, "duracion")
+        col.prop(c, "armonicos")
+        col.prop(c, "plano")
+        col.prop(c, "semilla")
+
+        col = caja.column(align=True)
+        col.label(text="Speed:")
+        col.prop(c, "frec_base")
+        col.prop(c, "octavas")
+        col.prop(c, "fps_ref")
+        tope = tope_sin_parpadeo(c)
+        rapida = min(c.frec_base * (2.0 ** c.octavas), tope)
+        col.label(text=f"fastest string: {rapida:.2f} Hz "
+                       f"(cap {tope:.2f})", icon='IPO_LINEAR')
+        if c.frec_base * (2.0 ** c.octavas) > tope:
+            col.label(text="capped, or it would flicker", icon='INFO')
+
+        col = caja.column(align=True)
+        col.label(text="Look:")
+        col.prop(c, "grosor")
+        col.prop(c, "color_grave")
+        col.prop(c, "color_medio")
+        col.prop(c, "color_agudo")
+        col.prop(c, "brillo")
+        col.prop(c, "fondo", slider=True)
+
+        caja.separator()
+        caja.operator("audioviz.hornear", icon='FILE_TICK')
+
+
 class AV_PT_atributos(Panel):
     """Chuleta de los atributos que las mallas dejan disponibles al shader."""
     bl_label = "Attributes for your shader"
@@ -6220,17 +6779,18 @@ class AV_PT_atributos(Panel):
 # ---------------------------------------------------------------------------
 
 clases = (AV_AudioAjustes, AV_Ajustes, AV_PaisajeAjustes, AV_EnjambreAjustes,
+          AV_CuerdasAjustes,
           AV_PlexusAjustes,
           AV_OT_analizar_audio, AV_OT_importar, AV_OT_tira_sonido,
           AV_OT_ver_analisis, AV_OT_quitar_analisis,
           AV_OT_reaplicar, AV_OT_quitar_suavizado,
           AV_OT_detectar_compas, AV_OT_quitar_compas, AV_OT_medio_tempo,
           AV_OT_crear_barras, AV_OT_crear_led, AV_OT_crear_pulso,
-          AV_OT_crear_plexus, AV_OT_crear_paisaje, AV_OT_crear_enjambre,
+          AV_OT_crear_plexus, AV_OT_crear_paisaje, AV_OT_crear_enjambre, AV_OT_crear_cuerdas,
           AV_OT_hornear, AV_OT_regenerar_puntos, AV_OT_ajustar_distancia,
           AV_OT_seleccionar_plexus, AV_OT_material_unico, AV_OT_limpiar,
           AV_PT_panel, AV_PT_barras, AV_PT_led, AV_PT_pulso, AV_PT_plexus,
-          AV_PT_atributos, AV_PT_paisaje, AV_PT_enjambre)
+          AV_PT_atributos, AV_PT_paisaje, AV_PT_enjambre, AV_PT_cuerdas)
 
 
 @persistent
@@ -6307,6 +6867,7 @@ def register():
     bpy.types.Object.audioviz_plex = PointerProperty(type=AV_PlexusAjustes)
     bpy.types.Object.audioviz_landscape = PointerProperty(type=AV_PaisajeAjustes)
     bpy.types.Object.audioviz_swarm = PointerProperty(type=AV_EnjambreAjustes)
+    bpy.types.Object.audioviz_strings = PointerProperty(type=AV_CuerdasAjustes)
     _quitar_handler()
     bpy.app.handlers.frame_change_pre.append(_al_cambiar_fotograma)
     bpy.app.handlers.load_post.append(_al_abrir_archivo)
@@ -6318,6 +6879,7 @@ def register():
 def unregister():
     _quitar_traducciones()
     _quitar_handler()
+    del bpy.types.Object.audioviz_strings
     del bpy.types.Object.audioviz_swarm
     del bpy.types.Object.audioviz_landscape
     del bpy.types.Object.audioviz_plex

@@ -8,8 +8,8 @@
 GIF has no sound.*
 
 Load a song, the plugin analyzes it right there and hands you presets ready to
-animate: bars, LEDs, a plexus, a scrolling landscape and an orbital swarm of
-particles. You can have all of them at once, several times over, each listening
+animate: bars, LEDs, a plexus, a scrolling landscape, an orbital swarm of particles
+and vibrating strings. You can have all of them at once, several times over, each listening
 to a different audio file with its own settings.
 
 Needs Blender 5.0 or newer. Nothing else: it uses the audio decoder and the
@@ -61,6 +61,7 @@ has no clear pulse, no tempo is invented.
 | **Plexus** | A cloud of points joined by lines. It can be generated from the surface or the volume of any scene object, and the faces can go to a separate object. |
 | **Landscape** | A grid with frequencies on one axis and time on the other: the relief travels towards the horizon. |
 | **Orbital swarm** | Thousands of particles orbiting a centre, pushed and lit by their band. |
+| **Strings** | One string per band, held at both ends and vibrating like a guitar's — plucked by the beat, ringing and fading. |
 
 ### What they have in common
 
