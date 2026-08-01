@@ -1,0 +1,230 @@
+AUDIO VIZ — como ponerlo en marcha
+==================================
+
+Hay dos formas. La primera es la normal; la segunda es para cuando estemos
+tocando el codigo.
+
+
+1) INSTALARLO COMO EXTENSION  (lo habitual)
+-------------------------------------------
+Descarga "audio_viz-1.0.0.zip" de la seccion Releases del repositorio. Luego, en
+Blender:
+
+    Edit > Preferences > Add-ons
+    flecha del desplegable de arriba a la derecha > Install from Disk...
+    elige el zip
+    marca la casilla de "Audio Viz"
+
+Y ya esta, para siempre. Desde ese momento:
+
+  - El panel sale solo al abrir Blender (visor 3D > tecla N > pestana Audio Viz).
+  - Los .blend que guardes funcionan al reabrirlos SIN ejecutar nada. El plexus
+    y el paisaje siguen animandose, que es lo que antes se quedaba congelado.
+  - Se actualiza reinstalando el zip encima.
+
+Para construir el zip tu mismo desde el codigo, desde una consola y dentro de la
+carpeta "extension\audio_viz":
+
+    blender --factory-startup --command extension build --output-dir ..\..\dist
+
+(cambiando "blender" por la ruta a tu blender.exe si no lo tienes en el PATH)
+
+
+2) APUNTAR BLENDER A LA CARPETA DEL PROYECTO  (para desarrollar)
+----------------------------------------------------------------
+Asi Blender lee los archivos directamente de aqui: editas, recargas y ya. No hay
+que reinstalar nada en cada cambio.
+
+Se hace UNA vez, desde una consola, poniendo TU ruta a blender.exe y TU ruta a
+la carpeta "extension" de este proyecto:
+
+    blender --command extension repo-add --name "Audio Viz dev" --directory "C:\ruta\a\blender-audio-viz\extension" av_dev
+
+(sin --factory-startup: ese modo no guarda las preferencias y el repositorio no
+quedaria apuntado)
+
+Luego, en Blender, en Add-ons aparecera "Audio Viz" bajo el repositorio
+"Audio Viz dev". Lo marcas y listo.
+
+Despues de editar blender_audio_viz.py, para ver el cambio:
+    F3 > "Reload Scripts"
+
+IMPORTANTE: no tengas las dos instalaciones activadas a la vez, o tendras el
+panel duplicado. Elige una.
+
+
+EL COMPAS SE DETECTA SOLO
+-------------------------
+Al cargar un audio se busca el tempo sin que tengas que pulsar nada. Cuesta unas
+decimas de segundo. Se puede desactivar con la casilla "Detectar el compas al
+cargar", en la seccion 1.
+
+Junto al BPM detectado sale su respaldo: "5 de 6 trozos del tema coinciden". Eso
+es lo que significa: se parte el tema y se busca el tempo en cada trozo por
+separado. Si todos dicen lo mismo, es que esta bien. Vale igual que un trozo diga
+la mitad o el doble, porque un tramo sin bombo suele contar los golpes de dos en
+dos y eso no es estar en desacuerdo.
+
+Ese numero sustituye al porcentaje que salia antes, que no valia: comparaba la
+energia de los pulsos con la de fuera, y en audio SIN ritmo esa proporcion sale
+alta por casualidad. Un pad sin un solo golpe sacaba un 97%, mas que dos
+canciones de verdad. El de ahora da 0 de 6 en todo lo que no tiene ritmo.
+
+Por eso ahora, si el tema no tiene un pulso claro, NO se inventa uno: te lo dice
+y se queda sin compas. Si sabes el tempo, escribelo a mano en la casilla BPM y
+todo lo demas funciona igual.
+
+Con temas de menos de 20 segundos no se puede partir, asi que se acepta lo que
+salga y se avisa de que no se ha podido comprobar.
+
+Donde todavia falla: cuando el tempo respira (grabaciones en directo, cosas
+tocadas a mano sin claqueta). Ahi el "BPM real" ni siquiera esta bien definido.
+El numero de trozos que coinciden te avisa: si es bajo, no te fies y escribe el
+tempo a mano.
+
+
+EL ENJAMBRE ORBITAL
+-------------------
+Una nube de miles de particulas girando alrededor de un centro. Cada una
+pertenece a una banda: cuando esa frecuencia suena, sus particulas se alejan del
+centro, engordan y se encienden. Las ondas del compas la barren de dentro afuera
+y encienden por donde pasan.
+
+Con el reparto "del centro al borde" el espectro se lee como una diana: graves en
+el nucleo, agudos en la orilla. Es el que mejor se entiende.
+
+No es un sistema de particulas de verdad y eso es a proposito. Donde esta cada
+particula se calcula con una formula, no arrastrando el estado del fotograma
+anterior, y de ahi salen tres cosas que en Blender no suelen ir juntas:
+
+  - Arrastras la barra de tiempo a donde quieras y es correcto. Nada de
+    rebobinar y ver la nube rota hasta que vuelvas a reproducir.
+  - El boton de Hornear vale tal cual, sin cache de simulacion.
+  - Renderiza en segundo plano sin sorpresas.
+
+DOS FORMAS DE REACCIONAR AL AUDIO, y se pueden mezclar:
+
+  "Empuje directo" coloca la particula segun lo que suena AHORA. Si el audio
+  pega un salto, ella pega el salto. Es lo mas facil de leer como ecualizador,
+  pero con musica movida tiembla.
+
+  "Fuerza con inercia" trata cada golpe como un empujon sobre algo que pesa: la
+  particula sale despacio, frena y vuelve sola. Medido contra el empuje directo
+  sobre el mismo audio: sacude 4,5 veces menos y llega 3 fotogramas tarde. Ese
+  retraso es justo lo que hace que parezca que tiene peso.
+
+  Sus dos mandos: "Tiempo de vuelta" es lo que tarda en regresar (corto =
+  nervioso y pegado al ritmo; largo = pesado, sigue moviendose cuando el golpe
+  ya paso). "Rebote" a 0 vuelve con el freno puesto, subido se pasa de largo y
+  oscila como un muelle.
+
+  El numero significa algo concreto: con la banda sonando a tope y sostenida, la
+  particula acaba desplazandose exactamente lo que diga el mando.
+
+  Para algo sutil: empuje directo bajo (0.5) y fuerza alta (2.5).
+
+CUANTO MANDA CADA ZONA DEL ESPECTRO: tres mandos, graves / medios / agudos, que
+multiplican lo que cada particula recibe. Afectan al movimiento Y al brillo, para
+que la nube no diga una cosa y se vea otra: a un grave con el peso a 0 ni se
+mueve ni se enciende.
+
+  Los tres a 1 = sin tocar (comprobado: peso 1.000000 exacto en todo el
+  espectro). Los tres a 3 = ganancia limpia. Graves a 0 y agudos a 2 = la
+  inclinacion del paisaje. Cada extremo vale exactamente lo que pone su mando,
+  asi que no hay que ir a tientas.
+
+LA TURBULENCIA es una corriente de remolinos que arrastra la nube y le quita el
+aire de rejilla perfecta. Dos mandos importan:
+
+  "Tamano del remolino": grande hace que zonas enteras se muevan juntas, que es
+  lo que se lee como corriente; pequeno hace que cada particula vaya por su
+  lado, y vuelve el temblor.
+
+  "La agita el audio": a 0 la corriente sopla siempre igual; a 1 solo se agitan
+  las particulas cuya banda esta sonando, asi que en los golpes hierve y en los
+  silencios se queda quieta. Lo que reacciona es cuanto agita, no lo rapido que
+  se mueve el campo: acelerarlo con la musica parece lo obvio y es la trampa,
+  porque al cambiar la velocidad la fase salta y las particulas pegan un brinco
+  en cada golpe.
+
+Lo que se pierde: no hay choques, y ninguna particula recuerda por donde ha
+pasado ni choca con las demas. Para leer musica no hace falta.
+
+Si te montas tu propio material para el enjambre, el nodo Attribute tiene que ir
+en tipo INSTANCER, no Geometry: lo que se ve son bolitas instanciadas y los
+valores estan en el punto que las instancia. Con Geometry saldrian todas del
+mismo color. Ademas del av_nivel y av_intensidad de siempre, lleva av_golpe:
+cuanto le esta dando la onda del compas en este fotograma.
+
+
+VER EL ANALISIS
+---------------
+En el panel, "Ver el analisis" dibuja el espectrograma del audio: el tiempo va
+de izquierda a derecha, las bandas de abajo (graves) a arriba (agudos), y el
+color va de azul oscuro (silencio) a blanco (a tope). Abajo del todo salen los
+pulsos del compas, altos los fuertes y bajos los demas, y una linea vertical
+marca el fotograma en el que estas.
+
+Sirve para ver de un vistazo si el analisis se parece a lo que oyes: donde
+pegan los golpes, si los graves saturan, si la caida es demasiado larga. La
+imagen refleja el suavizado, asi que se puede tocar la caida y volver a pulsar
+el boton para comparar.
+
+Se queda guardada dentro del .blend. La linea del fotograma deja de moverse al
+reabrir el archivo (se recalcula en memoria); vuelve a pulsar el boton y sigue.
+La X de al lado la borra.
+
+
+RENDERIZAR UNA ANIMACION LARGA
+------------------------------
+No lo hagas desde la ventana de Blender: hazlo desde una consola. El comando,
+en una sola linea:
+
+    blender --factory-startup --addons bl_ext.user_default.audio_viz -b "mi_escena.blend" -o "salida\####" -F PNG -a
+
+Por que asi y no desde Blender:
+  - No se dibuja el visor 3D. Con el se va toda una familia de cierres
+    inesperados que no tienen nada que ver con la imagen final: Blender puede
+    reventar pintando la ventana mientras renderiza, y pierdes el trabajo.
+  - "--factory-startup --addons bl_ext.user_default.audio_viz" activa SOLO este
+    plugin: tus otros addons se quedan fuera y ninguno puede estorbar.
+    Comprobado midiendo pixel a pixel: la imagen sale identica.
+  - Va mas rapido y te deja el ordenador libre.
+
+Si quieres solo un tramo, anade el rango ANTES de la -a:
+    -s 1200 -e 1800 -a
+
+Pide PNG numerados (-F PNG) en vez de un video a proposito: si se corta a
+medias, no pierdes lo renderizado y puedes seguir desde donde estabas pasandole
+el fotograma de inicio. El video se monta despues con las imagenes.
+
+
+ENTREGAR EL .BLEND A ALGUIEN SIN LA EXTENSION
+----------------------------------------------
+Las barras, los LEDs y los cubos del compas NO necesitan nada: van con drivers
+y claves de animacion, que son de Blender. Se abren y funcionan en cualquier
+sitio.
+
+El plexus y el paisaje si, porque su geometria la rehace la extension en cada
+fotograma. Para eso esta el boton "Hornear" al final de su panel: deja una
+copia con la animacion metida en claves de forma, que ya no depende de nada.
+El original se queda oculto por si quieres seguir tocandolo.
+
+Detalle a tener en cuenta: el paisaje sale identico, pero el plexus congela sus
+conexiones en el fotograma desde el que hornees. En la practica no se nota
+-con la amplitud normal el 98% de las aristas estan en todos los fotogramas-,
+pero si has subido mucho la amplitud el operador te avisa antes de hacerlo.
+
+
+DONDE ESTA CADA COSA
+--------------------
+  extension\audio_viz\blender_audio_viz.py   el plugin entero (aqui se edita)
+  extension\audio_viz\__init__.py            enganche con Blender, 6 lineas
+  extension\audio_viz\blender_manifest.toml  nombre, version, licencia
+
+  COMO INSTALAR.txt   este archivo
+  README.md           la version corta, para quien llega de nuevas
+  LICENSE             GPL-3.0-or-later
+
+Y ya esta: el plugin es un solo archivo de Python. No necesita ningun programa
+de fuera, porque usa el decodificador de audio y el ffmpeg que Blender ya trae.

@@ -1,0 +1,54 @@
+# ---------------------------------------------------------------------------
+# En el repositorio va SOLO el plugin y su manual. Todo lo demas se queda en
+# local: son herramientas que usamos para construirlo y probarlo, y no le hacen
+# falta a nadie que solo quiera usar la extension.
+# ---------------------------------------------------------------------------
+analiza_audio.py
+interfaz_audio.py
+crear_wav_prueba.py
+Comprobar deteccion de compas.py
+*.bat
+
+# Audios y analisis de prueba
+*.wav
+*.json
+
+# ---------------------------------------------------------------------------
+# Musica con derechos. NO subir nunca.
+# Los temas reales sirven para probar la deteccion de tempo en local, pero no
+# son nuestros y no pueden ir a ningun repositorio.
+# ---------------------------------------------------------------------------
+*.mp3
+
+# ---------------------------------------------------------------------------
+# Archivos de trabajo y salidas. Son varios GB y se rehacen solos.
+# ---------------------------------------------------------------------------
+blender/
+build_tmp/
+dist/
+*.blend
+*.blend[0-9]
+*.mp4
+*.mov
+*.aep
+*_render/
+
+# Renders sueltos
+*.exr
+/*.png
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---------------------------------------------------------------------------
+# Sistema
+# ---------------------------------------------------------------------------
+Thumbs.db
+desktop.ini
+.DS_Store

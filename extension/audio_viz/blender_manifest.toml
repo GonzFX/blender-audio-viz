@@ -1,0 +1,17 @@
+schema_version = "1.0.0"
+
+id = "audio_viz"
+version = "1.0.0"
+name = "Audio Viz"
+tagline = "Visualizadores 3D que reaccionan al audio, sin salir de Blender"
+maintainer = "GonzFX"
+type = "add-on"
+
+# Probado en Blender 5.0.1. Se puede bajar, pero hay dos cosas que lo atan a
+# versiones recientes: las acciones con slots (4.4 en adelante) y la coleccion
+# 'strips' del secuenciador (5.0). Bajarlo sin probarlo seria prometer de mas.
+blender_version_min = "5.0.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+tags = ["Animation", "Sequencer", "Object"]
